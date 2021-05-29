@@ -11,10 +11,17 @@ using namespace glm;
 
 void Application::DrawParam::operator()(){
     //set parameters
+    prog->bind();
     glUniformMatrix4fv(prog->getUniform("V"), 1, GL_FALSE, value_ptr(V));
     glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(M));
     glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(P));
+    SetMaterial(prog, (*material));
+    if(texture){
+        SetTexture(prog, *texture);
+    }
+    //draw
     shape->draw(prog);
+    prog->unbind();
 }
 
 void Application::keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
@@ -320,7 +327,7 @@ void Application::initGeom(const std::string& resourceDirectory)
 
 
 //helper function to pass material data to the GPU
-void Application::SetMaterial(shared_ptr<Program> curS, const tinyobj::material_t &material, float ka) {
+void SetMaterial(shared_ptr<Program> curS, const tinyobj::material_t &material, float ka) {
     glUniform3f(curS->getUniform("MatAmb"), ka*material.ambient[0], ka*material.ambient[1], ka*material.ambient[2]);
     glUniform3f(curS->getUniform("MatDif"), material.diffuse[0], material.diffuse[1], material.diffuse[2]);
     glUniform3f(curS->getUniform("MatSpec"), material.specular[0], material.specular[1], material.specular[2]);
@@ -330,7 +337,7 @@ void Application::SetMaterial(shared_ptr<Program> curS, const tinyobj::material_
 }
 
 //helper function to pass texture data to the GPU
-void Application::SetTexture(shared_ptr<Program> curS, const TexMap &texMap) {
+void SetTexture(shared_ptr<Program> curS, const Application::TexMap &texMap) {
     if(texMap.map_ka){
         texMap.map_ka->bind(curS->getUniform("map_ka"));
         glUniform1i(curS->getUniform("use_map_ka"), 1);
@@ -395,13 +402,13 @@ void Application::SetView(shared_ptr<Program>  shader) {
 void Application::updateUsingCameraPath(float frametime)  {
     
     if (goCamera) {
-    if(!splinepath[0].isDone()){
-        splinepath[0].update(frametime);
-        g_eye = splinepath[0].getPosition();
-    } else {
-        splinepath[1].update(frametime);
-        g_eye = splinepath[1].getPosition();
-    }
+        if(!splinepath[0].isDone()){
+            splinepath[0].update(frametime);
+            g_eye = splinepath[0].getPosition();
+        } else {
+            splinepath[1].update(frametime);
+            g_eye = splinepath[1].getPosition();
+        }
     }
 }
 

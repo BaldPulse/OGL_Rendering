@@ -69,6 +69,8 @@ public:
         glm::mat4 P;
         std::shared_ptr<Program> prog;
         std::shared_ptr<Shape> shape;
+        tinyobj::material_t* material;
+        std::shared_ptr<TexMap> texture;
         void operator()();
     };
 	std::shared_ptr<TexMap> mossy_texture;
@@ -111,10 +113,10 @@ public:
 	void initGeom(const std::string& resourceDirectory);
 
     //helper function to pass material data to the GPU
-	void SetMaterial(std::shared_ptr<Program> curS, const tinyobj::material_t &material, float ka=1.0f);
+	friend void SetMaterial(std::shared_ptr<Program> curS, const tinyobj::material_t &material, float ka=1.0f);
 
 	//helper function to pass texture data to the GPU
-	void SetTexture(std::shared_ptr<Program> curS, const TexMap &texMap);
+	friend void SetTexture(std::shared_ptr<Program> curS, const TexMap &texMap);
 
 	/* helper function to set model trasnforms */
   	void SetModel(glm::vec3 trans, float rotY, float rotX, float sc, std::shared_ptr<Program> curS);
