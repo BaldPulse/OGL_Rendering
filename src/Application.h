@@ -61,6 +61,16 @@ public:
 		Texture *map_kd;
 		Texture *map_color;
 	};
+
+    //
+    struct DrawParam{
+        glm::mat4 V;
+        glm::mat4 M;
+        glm::mat4 P;
+        std::shared_ptr<Program> prog;
+        std::shared_ptr<Shape> shape;
+        void operator()();
+    };
 	std::shared_ptr<TexMap> mossy_texture;
 	unsigned int oceanMapTexture;
 	unsigned int skyMapTexture;
@@ -116,8 +126,9 @@ public:
    	/* camera controls - do not change */
 	void SetView(std::shared_ptr<Program>  shader);
 
-
    	void updateUsingCameraPath(float frametime);
+
+    void render_stack(std::stack<DrawParam> renderStack);
 
 	void render(float frametime);
 };

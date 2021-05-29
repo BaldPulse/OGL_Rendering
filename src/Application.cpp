@@ -9,7 +9,13 @@
 using namespace std;
 using namespace glm;
 
-
+void Application::DrawParam::operator()(){
+    //set parameters
+    glUniformMatrix4fv(prog->getUniform("V"), 1, GL_FALSE, value_ptr(V));
+    glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(M));
+    glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(P));
+    shape->draw(prog);
+}
 
 void Application::keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
@@ -398,6 +404,16 @@ void Application::updateUsingCameraPath(float frametime)  {
     }
     }
 }
+
+void Application::render_stack(std::stack<DrawParam> renderStack){
+    //useful since shadow map has to be rendered before 
+    //main scene is rendered
+    while(!renderStack.empty()){
+        renderStack.top()();
+        renderStack.pop();
+    }
+}
+
 
 void Application::render(float frametime) {
     // Get current frame buffer size.
