@@ -195,6 +195,10 @@ void Application::init(const std::string& resourceDirectory)
     splinepath[0] = Spline(glm::vec3(0,1,3), glm::vec3(-1,1,1), glm::vec3(3, 1, 3), glm::vec3(2,1,0), 5);
     splinepath[1] = Spline(glm::vec3(2,1,0), glm::vec3(1.5,0,1), glm::vec3(1, 2, 2), glm::vec3(3,2,-3), 5);
 
+    depthMap = create_depthMap(1024, 1024);
+    depthMapFBO = bind_depthMap_to_framebuffer(depthMap);
+
+
 }
 
 void Application::initGeom(const std::string& resourceDirectory)
@@ -401,18 +405,18 @@ void Application::render(float frametime) {
     
     Model->pushMatrix();
 
-    // cubeProg->bind();
-    //     Model->pushMatrix();
-    //     Model->scale(vec3(50.0,50.0,50.0));
-    //     glUniformMatrix4fv(cubeProg->getUniform("P"), 1, GL_FALSE, value_ptr(Projection->topMatrix()));
-    //     glDepthFunc(GL_LEQUAL);
-    //     SetView(cubeProg);
-    //     glUniformMatrix4fv(cubeProg->getUniform("M"), 1,GL_FALSE,value_ptr(Model->topMatrix()));
-    //     glBindTexture(GL_TEXTURE_CUBE_MAP, skyMapTexture);
-    //     cube->draw(cubeProg);
-    //     glDepthFunc(GL_LESS);
-    //     Model->popMatrix();
-    // cubeProg->unbind();
+    cubeProg->bind();
+        Model->pushMatrix();
+        Model->scale(vec3(50.0,50.0,50.0));
+        glUniformMatrix4fv(cubeProg->getUniform("P"), 1, GL_FALSE, value_ptr(Projection->topMatrix()));
+        glDepthFunc(GL_LEQUAL);
+        SetView(cubeProg);
+        glUniformMatrix4fv(cubeProg->getUniform("M"), 1,GL_FALSE,value_ptr(Model->topMatrix()));
+        glBindTexture(GL_TEXTURE_CUBE_MAP, skyMapTexture);
+        cube->draw(cubeProg);
+        glDepthFunc(GL_LESS);
+        Model->popMatrix();
+    cubeProg->unbind();
     
     
     vec3 direction_light = vec3(2.0, -1.0, 0.0); //uniform directional light (sun/moon light)
@@ -422,15 +426,11 @@ void Application::render(float frametime) {
                         vec3(-2, 1, 0.0) + direction_light,
                         vec3(0.0, 1.0, 0.0)
                         );
-    
-    unsigned int SHADOW_WIDTH=1024, SHADOW_HEIGHT=1024; //shadow map size
     texProg->bind();
         glUniform3f(texProg->getUniform("lightDir"), direction_light.x, direction_light.y, direction_light.z);
         glUniform1i(texProg->getUniform("flip"), 1);
     texProg->unbind();
-    unsigned int depthMap = create_depthMap(1024, 1024);
-    unsigned int depthMapFBO = bind_depthMap_to_framebuffer(depthMap);
-
+    
     Model->pushMatrix();
     Model->translate(vec3(0,9.0,2));
     // Model->scale(vec3(0.1,0.1,0.1));
