@@ -33,4 +33,5 @@ void load_texture(std::shared_ptr<TexMap> texMap, std::string texDir, tinyobj::m
 
 unsigned int create_depthMap(unsigned int shadow_width, unsigned int shadow_height);
 unsigned int bind_depthMap_to_framebuffer(unsigned int depthMap);
+void bind_depthMap_to_shadowMap(std::shared_ptr<Program> prog, unsigned int depthMap, int unit);
 #endif

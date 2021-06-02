@@ -370,7 +370,6 @@ void Application::render(float frametime) {
     // Get current frame buffer size.
     int width, height;
     glfwGetFramebufferSize(windowManager->getHandle(), &width, &height);
-    glViewport(0, 0, width, height);
 
     // Clear framebuffer.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -494,14 +493,25 @@ void Application::render(float frametime) {
             shadow_queue->push(shadowParam);
         }
     Model->popMatrix();
+
+    //render shadow map first
+    glCullFace(GL_FRONT);
     shadowProg->bind();
     glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-	// glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO); 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO); 
+    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClear(GL_DEPTH_BUFFER_BIT);
     shadowProg->unbind();
     renderQueue(shadow_queue);
-    // renderQueue(render_queue);
+
+    //render actual scene next
+    glCullFace(GL_BACK);
+    glViewport(0, 0, width, height);
+    prog->bind();
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    bind_depthMap_to_shadowMap(prog, depthMap, 0);
+    prog->unbind();
+    renderQueue(render_queue);
 
 
 

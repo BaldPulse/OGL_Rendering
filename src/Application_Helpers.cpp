@@ -19,6 +19,7 @@ void simple_shader_init_uniforms_attributes(std::shared_ptr<Program> prog, std::
     prog->addUniform("MatEmit");
     prog->addUniform("Alpha");
     prog->addUniform("lightDir");
+    prog->addUniform("shadowMap");
     prog->addAttribute("vertPos");
     prog->addAttribute("vertNor");
     prog->addAttribute("vertTex"); 
@@ -138,4 +139,9 @@ unsigned int bind_depthMap_to_framebuffer(unsigned int depthMap){
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
     return depthMapFBO;
+}
+void bind_depthMap_to_shadowMap(std::shared_ptr<Program> prog, unsigned int depthMap, int unit){
+    glActiveTexture(GL_TEXTURE0 + unit);
+    glBindTexture(GL_TEXTURE_2D, depthMap);
+    glUniform1i(prog->getUniform("shadowMap"), unit);
 }
