@@ -62,7 +62,7 @@ public:
 	};
 
 
-    //
+    //render queue struct for each shape
     struct DrawParam{
         glm::mat4 V;
         glm::mat4 M;
@@ -75,8 +75,8 @@ public:
         void operator()();
     };
 
-    std::shared_ptr<std::queue<DrawParam>> shadow_queue;
-    std::shared_ptr<std::queue<DrawParam>> render_queue;
+    std::shared_ptr<std::queue<DrawParam>> shadow_queue; //shadow mapping
+    std::shared_ptr<std::queue<DrawParam>> render_queue; //actual scene
 	std::shared_ptr<TexMap> mossy_texture;
 	unsigned int oceanMapTexture;
 	unsigned int skyMapTexture;

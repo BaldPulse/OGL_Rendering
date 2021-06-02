@@ -414,20 +414,30 @@ void Application::render(float frametime) {
         Model->popMatrix();
     cubeProg->unbind();
     
-    texProg->bind();
+    
+
     Model->pushMatrix();
-    glUniform3f(texProg->getUniform("lightPos"), -2.0, 1.0, 0.0);
-    glUniformMatrix4fv(texProg->getUniform("P"), 1, GL_FALSE, value_ptr(Projection->topMatrix()));
+    texProg->bind();
+        glUniform3f(texProg->getUniform("lightPos"), -2.0, 1.0, 0.0);
+        glUniform1i(texProg->getUniform("flip"), 1);
+    texProg->unbind();
+    // glUniformMatrix4fv(texProg->getUniform("P"), 1, GL_FALSE, value_ptr(Projection->topMatrix()));
+    // glUniformMatrix4fv(texProg->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+
     Model->scale(vec3(0.1,0.1,0.1));
-    SetView(texProg);
-    glUniformMatrix4fv(texProg->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-    glUniform1i(texProg->getUniform("flip"), 1);
-    SetMaterial(texProg, mossy_ground_material->at(0));
-    SetTexture(texProg, (*mossy_texture));
-    mossy_ground->begin()->draw(texProg);
+    DrawParam thisParam= {
+                glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
+                Model->topMatrix(),
+                Projection->topMatrix(),
+                1.0,
+                texProg,
+                mossy_ground->begin(),
+                &(mossy_ground_material->at(0)),
+                mossy_texture
+            };
+    render_queue->push(thisParam);
     Model->popMatrix();
 
-    texProg->unbind();
 
     //car
     Model->pushMatrix();
@@ -435,7 +445,6 @@ void Application::render(float frametime) {
         Model->rotate(0.78, vec3(0,1,0));
         Model->scale(vec3(0.7,0.7,0.7));
         prog->bind();
-        SetView(prog);
         glUniform3f(prog->getUniform("lightPos"), -2.0, 1.0, 0.0);
         prog->unbind();
         for(auto iter=car->begin(); iter!=car->end(); iter++){
