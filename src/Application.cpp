@@ -404,25 +404,32 @@ void Application::render(float frametime) {
     cubeProg->bind();
         Model->pushMatrix();
         Model->scale(vec3(50.0,50.0,50.0));
-        //set the projection matrix - can use the same one
         glUniformMatrix4fv(cubeProg->getUniform("P"), 1, GL_FALSE, value_ptr(Projection->topMatrix()));
-        //set the depth function to always draw the box!
         glDepthFunc(GL_LEQUAL);
-        //set up view matrix to include your view transforms
-        //(your code likely will be different depending
         SetView(cubeProg);
-        //set and send model transforms - likely want a bigger cube
         glUniformMatrix4fv(cubeProg->getUniform("M"), 1,GL_FALSE,value_ptr(Model->topMatrix()));
         glBindTexture(GL_TEXTURE_CUBE_MAP, skyMapTexture);
-        //draw the actual cube
         cube->draw(cubeProg);
-        //set the depth test back to normal!
         glDepthFunc(GL_LESS);
         Model->popMatrix();
-        //unbind the shader for the skybox
     cubeProg->unbind();
     
+    texProg->bind();
+    Model->pushMatrix();
+    glUniform3f(texProg->getUniform("lightPos"), -2.0, 1.0, 0.0);
+    glUniformMatrix4fv(texProg->getUniform("P"), 1, GL_FALSE, value_ptr(Projection->topMatrix()));
+    Model->scale(vec3(0.1,0.1,0.1));
+    SetView(texProg);
+    glUniformMatrix4fv(texProg->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+    glUniform1i(texProg->getUniform("flip"), 1);
+    SetMaterial(texProg, mossy_ground_material->at(0));
+    SetTexture(texProg, (*mossy_texture));
+    mossy_ground->begin()->draw(texProg);
+    Model->popMatrix();
 
+    texProg->unbind();
+
+    //car
     Model->pushMatrix();
         Model->translate(vec3(0.0, 1.0, 0.0));
         Model->rotate(0.78, vec3(0,1,0));
@@ -450,20 +457,6 @@ void Application::render(float frametime) {
     renderQueue(render_queue);
 
 
-    texProg->bind();
-    Model->pushMatrix();
-    glUniform3f(texProg->getUniform("lightPos"), -2.0, 1.0, 0.0);
-    glUniformMatrix4fv(texProg->getUniform("P"), 1, GL_FALSE, value_ptr(Projection->topMatrix()));
-    Model->scale(vec3(0.1,0.1,0.1));
-    SetView(texProg);
-    glUniformMatrix4fv(texProg->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-    glUniform1i(texProg->getUniform("flip"), 1);
-    SetMaterial(texProg, mossy_ground_material->at(0));
-    SetTexture(texProg, (*mossy_texture));
-    mossy_ground->begin()->draw(texProg);
-    Model->popMatrix();
-
-    texProg->unbind();
 
     Model->popMatrix();
     // Pop matrix stacks.
