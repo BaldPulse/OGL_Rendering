@@ -18,7 +18,7 @@ void simple_shader_init_uniforms_attributes(std::shared_ptr<Program> prog, std::
     prog->addUniform("MatShine");
     prog->addUniform("MatEmit");
     prog->addUniform("Alpha");
-    prog->addUniform("lightPos");
+    prog->addUniform("lightDir");
     prog->addAttribute("vertPos");
     prog->addAttribute("vertNor");
     prog->addAttribute("vertTex"); 
@@ -46,7 +46,7 @@ void texture_shader_init_uniforms_attributes(std::shared_ptr<Program> prog, std:
     prog->addUniform("MatShine");
     prog->addUniform("MatEmit");
     prog->addUniform("Alpha");
-    prog->addUniform("lightPos");
+    prog->addUniform("lightDir");
     prog->addAttribute("vertPos");
     prog->addAttribute("vertNor");
     prog->addAttribute("vertTex");
@@ -100,4 +100,21 @@ void load_texture(std::shared_ptr<TexMap> texMap, std::string texDir, tinyobj::m
     else
         texMap->map_ks = NULL;
 
+}
+unsigned int create_depthMap(unsigned int shadow_width, unsigned int shadow_height){
+    /*
+    creates and returns a depthMap texture
+    */
+    unsigned int depthMap;
+    glGenTextures(1, &depthMap);
+    glBindTexture(GL_TEXTURE_2D, depthMap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 
+                shadow_width, shadow_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+    return depthMap;
 }

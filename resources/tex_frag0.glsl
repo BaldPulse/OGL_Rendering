@@ -12,10 +12,11 @@ uniform float MatShine;
 uniform vec3 MatEmit;
 uniform float Alpha;
 uniform int flip; 
+uniform vec3 lightDir;
+
 
 in vec2 vTexCoord;
 in vec3 fragNor;
-in vec3 lightDir;
 in vec3 EPos;
 
 out vec4 Outcolor;
@@ -43,7 +44,7 @@ void main() {
 		 Invert = -1.0f;
 	}
 	vec3 normal = normalize(Invert * fragNor);
-	vec3 light = normalize(lightDir);
+	vec3 light  = normalize(lightDir);
 	vec3 half_v = normalize(normalize(-EPos) + light);
 	vec3 dif = VecDif*max(0.0, dot(normal, light));
 	vec3 shine = VecSpec*pow(max(dot(half_v, normal), 0.0), MatShine);

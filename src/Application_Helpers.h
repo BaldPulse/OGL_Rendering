@@ -30,4 +30,6 @@ void cube_shader_init_uniforms_attributes(std::shared_ptr<Program> prog, std::st
 
 void load_texture(std::shared_ptr<TexMap> texMap, std::string texDir, tinyobj::material_t material);
 
+unsigned int create_depthMap(unsigned int shadow_width, unsigned int shadow_height);
+
 #endif

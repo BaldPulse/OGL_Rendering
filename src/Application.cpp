@@ -291,7 +291,7 @@ void SetTexture(shared_ptr<Program> curS, const TexMap &texMap) {
 void Application::DrawParam::operator()(){
     //set parameters
     prog->bind();
-    glUniform3f(prog->getUniform("lightPos"), -2.0, 1.0, 0.0);
+    glUniform3f(prog->getUniform("lightDir"), -2.0, 1.0, 0.0);
     glUniformMatrix4fv(prog->getUniform("V"), 1, GL_FALSE, value_ptr(V));
     glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(M));
     glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(P));
@@ -418,7 +418,7 @@ void Application::render(float frametime) {
 
     Model->pushMatrix();
     texProg->bind();
-        glUniform3f(texProg->getUniform("lightPos"), -2.0, 1.0, 0.0);
+        glUniform3f(texProg->getUniform("lightDir"), 2.0, -1.0, 0.0);
         glUniform1i(texProg->getUniform("flip"), 1);
     texProg->unbind();
     // glUniformMatrix4fv(texProg->getUniform("P"), 1, GL_FALSE, value_ptr(Projection->topMatrix()));
@@ -445,7 +445,7 @@ void Application::render(float frametime) {
         Model->rotate(0.78, vec3(0,1,0));
         Model->scale(vec3(0.7,0.7,0.7));
         prog->bind();
-        glUniform3f(prog->getUniform("lightPos"), -2.0, 1.0, 0.0);
+        glUniform3f(prog->getUniform("lightDir"), 2.0, -1.0, 0.0);
         prog->unbind();
         for(auto iter=car->begin(); iter!=car->end(); iter++){
             DrawParam thisParam= {
