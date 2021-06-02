@@ -415,10 +415,11 @@ void Application::render(float frametime) {
     cubeProg->unbind();
     
     
+    vec3 direction_light = vec3(2.0, -1.0, 0.0); //uniform directional light (sun/moon light)
 
     Model->pushMatrix();
     texProg->bind();
-        glUniform3f(texProg->getUniform("lightDir"), 2.0, -1.0, 0.0);
+        glUniform3f(texProg->getUniform("lightDir"), direction_light.x, direction_light.y, direction_light.z);
         glUniform1i(texProg->getUniform("flip"), 1);
     texProg->unbind();
     // glUniformMatrix4fv(texProg->getUniform("P"), 1, GL_FALSE, value_ptr(Projection->topMatrix()));
@@ -445,7 +446,7 @@ void Application::render(float frametime) {
         Model->rotate(0.78, vec3(0,1,0));
         Model->scale(vec3(0.7,0.7,0.7));
         prog->bind();
-        glUniform3f(prog->getUniform("lightDir"), 2.0, -1.0, 0.0);
+        glUniform3f(prog->getUniform("lightDir"), direction_light.x, direction_light.y, direction_light.z);
         prog->unbind();
         for(auto iter=car->begin(); iter!=car->end(); iter++){
             DrawParam thisParam= {
