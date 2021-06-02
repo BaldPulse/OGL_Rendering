@@ -422,46 +422,32 @@ void Application::render(float frametime) {
         //unbind the shader for the skybox
     cubeProg->unbind();
     
-    prog->bind();
-    // Model->pushMatrix();
-    // glUniform3f(prog->getUniform("lightPos"), -2.0, 1.0, 0.0);
-    // glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(Projection->topMatrix()));
-    // SetView(prog);
-    // Model->translate(vec3(0.0, 1.0, 0.0));
-    // Model->rotate(0.78, vec3(0,1,0));
-    // glUniformMatrix4fv(prog->getUniform("M"), 1,GL_FALSE,value_ptr(Model->topMatrix()));
-    // for(auto iter=car->begin(); iter!=car->end(); iter++){
-    //     DrawParam thisParam= {
-    //         glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
-    //         Model->topMatrix(),
-    //         Projection->topMatrix(),
-    //         0.1,
-    //         prog,
-    //         iter,
-    //         &(car_material->at(iter->mtlBuf[0])),
-    //         NULL
-    //     };
-  
-    //     render_queue->push(thisParam);
-    //     thisParam.material = NULL;
-    //     shadow_queue->push(thisParam);
-    // }
-		Model->pushMatrix();
-		glUniform3f(prog->getUniform("lightPos"), -2.0, 1.0, 0.0);
-		glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(Projection->topMatrix()));
-		SetView(prog);
-		Model->translate(vec3(0.0, 0.5, 0.0));
-		Model->rotate(0.78, vec3(0,1,0));
-		Model->scale(vec3(0.5,0.5,0.5));
-		glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-		for(auto iter=car->begin(); iter!=car->end(); iter++){
-			SetMaterial(prog, car_material->at(iter->mtlBuf[0]), 0.1);
-			iter->draw(prog);
-		}
-    prog->unbind();
 
-    // renderQueue(render_queue);
+    Model->pushMatrix();
+        Model->translate(vec3(0.0, 1.0, 0.0));
+        Model->rotate(0.78, vec3(0,1,0));
+        Model->scale(vec3(0.7,0.7,0.7));
+        prog->bind();
+        SetView(prog);
+        glUniform3f(prog->getUniform("lightPos"), -2.0, 1.0, 0.0);
+        prog->unbind();
+        for(auto iter=car->begin(); iter!=car->end(); iter++){
+            DrawParam thisParam= {
+                glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
+                Model->topMatrix(),
+                Projection->topMatrix(),
+                0.1,
+                prog,
+                iter,
+                &(car_material->at(iter->mtlBuf[0])),
+                NULL
+            };
+            render_queue->push(thisParam);
+            thisParam.material = NULL;
+            shadow_queue->push(thisParam);
+        }
     Model->popMatrix();
+    renderQueue(render_queue);
 
 
     texProg->bind();
