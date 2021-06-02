@@ -52,8 +52,8 @@ public:
 	std::shared_ptr<Shape> cube;
 	std::shared_ptr<std::vector<Shape>> car;
 	std::shared_ptr<std::vector<tinyobj::material_t>> car_material;
-	std::shared_ptr<std::vector<Shape>> mossy_ground;
-	std::shared_ptr<std::vector<tinyobj::material_t>> mossy_ground_material;
+	std::shared_ptr<std::vector<Shape>> desert;
+	std::shared_ptr<std::vector<tinyobj::material_t>> desert_material;
 
 
 
@@ -80,7 +80,7 @@ public:
 
     std::shared_ptr<std::queue<DrawParam>> shadow_queue; //shadow mapping
     std::shared_ptr<std::queue<DrawParam>> render_queue; //actual scene
-	std::shared_ptr<TexMap> mossy_texture;
+	std::shared_ptr<TexMap> desert_texture;
 	unsigned int oceanMapTexture;
 	unsigned int skyMapTexture;
 

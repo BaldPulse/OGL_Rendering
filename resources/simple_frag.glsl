@@ -58,5 +58,5 @@ void main()
 	float trans_index = Alpha;
 	if(Alpha < 0.99)
 		trans_index = (trans_index + length(spec_component))/(1.0f+Alpha);
-	color = vec4(MatAmb + MatEmit + (1.0f-shadow)*(dif_component+spec_component), trans_index);
+	color = vec4(MatAmb + MatEmit + (dif_component+spec_component), trans_index);
 }

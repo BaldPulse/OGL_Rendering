@@ -16,6 +16,6 @@ void main()
 	gl_Position = P * V * M * vertPos;
 	//update these as needed
 	fragNor = (M * vec4(vertNor, 0.0)).xyz; 
-	EPos = (M*vertPos).xyz;
-	FragPosLightSpace = lightSpaceMatrix* vec4(EPos, 1.0);
+	EPos = (V*M*vertPos).xyz;
+	FragPosLightSpace = lightSpaceMatrix* M*vertPos;
 }

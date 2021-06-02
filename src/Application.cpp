@@ -204,19 +204,19 @@ void Application::initGeom(const std::string& resourceDirectory)
     string errStr;
     // Initialize ground mesh.
     vector<tinyobj::shape_t> TOshapesB;
-    mossy_ground_material = make_shared<vector<tinyobj::material_t>>();
+    desert_material = make_shared<vector<tinyobj::material_t>>();
     // load in the mesh and make the shape(s)
-    rc = tinyobj::LoadObj(TOshapesB, *mossy_ground_material, errStr, 
-        (resourceDirectory + "/MossyGround" + "/mossy_ground_l.obj").c_str(), (resourceDirectory+"/MossyGround/").c_str());
+    rc = tinyobj::LoadObj(TOshapesB, *desert_material, errStr, 
+        (resourceDirectory + "/Desert" + "/Dune_LOD1.obj").c_str(), (resourceDirectory+"/Desert/").c_str());
     if (!rc) {
         cerr << errStr << endl;
     } else {
-        mossy_ground = make_shared<vector<Shape>>();
-        write_to_obj(mossy_ground, TOshapesB);
+        desert = make_shared<vector<Shape>>();
+        write_to_obj(desert, TOshapesB);
     }
     // setup ground material
-    mossy_texture = make_shared<TexMap>();
-    load_texture(mossy_texture, resourceDirectory+"/MossyGroundTexture/", mossy_ground_material->at(0));
+    desert_texture = make_shared<TexMap>();
+    load_texture(desert_texture, resourceDirectory+"/Desert/", desert_material->at(0));
 
     // Initialize car mesh.
     vector<tinyobj::shape_t> TOshapesC;
@@ -440,9 +440,9 @@ void Application::render(float frametime) {
                 Projection->topMatrix(),
                 0.1,
                 texProg,
-                mossy_ground->begin(),
-                &(mossy_ground_material->at(0)),
-                mossy_texture
+                desert->begin(),
+                &(desert_material->at(0)),
+                desert_texture
             };
     render_queue->push(thisParam);
     DrawParam shadowParam={
@@ -451,7 +451,7 @@ void Application::render(float frametime) {
         lightProjection,
         0.0,
         shadowProg,
-        mossy_ground->begin(),
+        desert->begin(),
         NULL,
         NULL
     };
