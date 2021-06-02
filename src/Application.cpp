@@ -9,20 +9,6 @@
 using namespace std;
 using namespace glm;
 
-void Application::DrawParam::operator()(){
-    //set parameters
-    prog->bind();
-    glUniformMatrix4fv(prog->getUniform("V"), 1, GL_FALSE, value_ptr(V));
-    glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(M));
-    glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(P));
-    SetMaterial(prog, (*material));
-    if(texture){
-        SetTexture(prog, *texture);
-    }
-    //draw
-    shape->draw(prog);
-    prog->unbind();
-}
 
 void Application::keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
@@ -135,7 +121,7 @@ void Application::write_to_obj(shared_ptr<vector<Shape>> mesh, vector<tinyobj::s
             mesh->back().createShape(shapes[i]);
             mesh->back().measure();
             mesh->back().init();
-    }
+        }
 }
 
 unsigned int Application::createSky(string dir, vector<string> faces) {
@@ -180,61 +166,16 @@ void Application::init(const std::string& resourceDirectory)
 
     // Initialize the GLSL program that we will use for local shading
     prog = make_shared<Program>();
-    prog->setVerbose(true);
-    prog->setShaderNames(resourceDirectory + "/simple_vert.glsl", resourceDirectory + "/simple_frag.glsl");
-    prog->init();
-    prog->addUniform("P");
-    prog->addUniform("V");
-    prog->addUniform("M");
-    prog->addUniform("MatAmb");
-    prog->addUniform("MatDif");
-    prog->addUniform("MatSpec");
-    prog->addUniform("MatShine");
-    prog->addUniform("MatEmit");
-    prog->addUniform("Alpha");
-    prog->addUniform("lightPos");
-    prog->addAttribute("vertPos");
-    prog->addAttribute("vertNor");
-    prog->addAttribute("vertTex"); 
+    simple_shader_init_uniforms_attributes(prog, resourceDirectory + "/simple_vert.glsl", resourceDirectory + "/simple_frag.glsl");
 
 
     // Initialize the GLSL program that we will use for texture mapping
     texProg = make_shared<Program>();
-    texProg->setVerbose(true);
-    texProg->setShaderNames(resourceDirectory + "/tex_vert.glsl", resourceDirectory + "/tex_frag0.glsl");
-    texProg->init();
-    texProg->addUniform("P");
-    texProg->addUniform("V");
-    texProg->addUniform("M");
-    texProg->addUniform("flip");
-    texProg->addUniform("map_color");
-    texProg->addUniform("use_map_color");
-    texProg->addUniform("map_ka");
-    texProg->addUniform("use_map_ka");
-    texProg->addUniform("map_kd");
-    texProg->addUniform("use_map_kd");
-    texProg->addUniform("MatAmb");
-    texProg->addUniform("MatDif");
-    texProg->addUniform("MatSpec");
-    texProg->addUniform("MatShine");
-    texProg->addUniform("MatEmit");
-    texProg->addUniform("Alpha");
-    texProg->addUniform("lightPos");
-    texProg->addAttribute("vertPos");
-    texProg->addAttribute("vertNor");
-    texProg->addAttribute("vertTex");
+    texture_shader_init_uniforms_attributes(texProg, resourceDirectory + "/tex_vert.glsl", resourceDirectory + "/tex_frag0.glsl");
 
     // Initialize the GLSL program that we will use for skybox shading
     cubeProg = make_shared<Program>();
-    cubeProg->setVerbose(true);
-    cubeProg->setShaderNames(resourceDirectory + "/cube_vert.glsl", resourceDirectory + "/cube_frag.glsl");
-    cubeProg->init();
-    cubeProg->addUniform("P");
-    cubeProg->addUniform("V");
-    cubeProg->addUniform("M");
-    cubeProg->addUniform("skybox");
-    cubeProg->addAttribute("vertPos");
-    cubeProg->addAttribute("vertNor");
+    cube_shader_init_uniforms_attributes(cubeProg, resourceDirectory + "/cube_vert.glsl", resourceDirectory + "/cube_frag.glsl");
 
 
 
@@ -269,10 +210,8 @@ void Application::initGeom(const std::string& resourceDirectory)
     if (!rc) {
         cerr << errStr << endl;
     } else {
-        mossy_ground = make_shared<Shape>();
-        mossy_ground->createShape(TOshapesB[0]);
-        mossy_ground->measure();
-        mossy_ground->init();
+        mossy_ground = make_shared<vector<Shape>>();
+        write_to_obj(mossy_ground, TOshapesB);
     }
     // setup ground material
     mossy_texture = make_shared<TexMap>();
@@ -361,6 +300,22 @@ void SetTexture(shared_ptr<Program> curS, const Application::TexMap &texMap) {
     }
 }
 
+void Application::DrawParam::operator()(){
+    //set parameters
+    prog->bind();
+    glUniform3f(prog->getUniform("lightPos"), -2.0, 1.0, 0.0);
+    glUniformMatrix4fv(prog->getUniform("V"), 1, GL_FALSE, value_ptr(V));
+    glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(M));
+    glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(P));
+    if(material)
+        SetMaterial(prog, *material,f);
+    if(texture)
+        SetTexture(prog, *texture);
+    //draw
+    shape->draw(prog);
+    prog->unbind();
+}
+
 /* helper function to set model trasnforms */
 void Application::SetModel(vec3 trans, float rotY, float rotX, float sc, shared_ptr<Program> curS) {
     mat4 Trans = glm::translate( glm::mat4(1.0f), trans);
@@ -412,12 +367,12 @@ void Application::updateUsingCameraPath(float frametime)  {
     }
 }
 
-void Application::render_stack(std::stack<DrawParam> renderStack){
+void Application::renderQueue(std::shared_ptr<std::queue<DrawParam>> renderQueue){
     //useful since shadow map has to be rendered before 
     //main scene is rendered
-    while(!renderStack.empty()){
-        renderStack.top()();
-        renderStack.pop();
+    while(!renderQueue->empty()){
+        renderQueue->front()();
+        renderQueue->pop();
     }
 }
 
@@ -431,8 +386,12 @@ void Application::render(float frametime) {
     // Clear framebuffer.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    //Use the matrix stack for Lab 6
+    //Use the matrix queue for Lab 6
     float aspect = width/(float)height;
+
+    // Create Render Queues
+    shadow_queue = make_shared<std::queue<DrawParam>>();
+    render_queue = make_shared<std::queue<DrawParam>>();
 
     // Create the matrix stacks - please leave these alone for now
     auto Projection = make_shared<MatrixStack>();
@@ -476,19 +435,45 @@ void Application::render(float frametime) {
     cubeProg->unbind();
     
     prog->bind();
-    Model->pushMatrix();
-    glUniform3f(prog->getUniform("lightPos"), -2.0, 1.0, 0.0);
-    glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(Projection->topMatrix()));
-    SetView(prog);
-    Model->translate(vec3(0.0, 1.0, 0.0));
-    Model->rotate(0.78, vec3(0,1,0));
-    glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
-    for(auto iter=car->begin(); iter!=car->end(); iter++){
-        SetMaterial(prog, car_material->at(iter->mtlBuf[0]), 0.1);
-        iter->draw(prog);
-    }
-    Model->popMatrix();
+    // Model->pushMatrix();
+    // glUniform3f(prog->getUniform("lightPos"), -2.0, 1.0, 0.0);
+    // glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(Projection->topMatrix()));
+    // SetView(prog);
+    // Model->translate(vec3(0.0, 1.0, 0.0));
+    // Model->rotate(0.78, vec3(0,1,0));
+    // glUniformMatrix4fv(prog->getUniform("M"), 1,GL_FALSE,value_ptr(Model->topMatrix()));
+    // for(auto iter=car->begin(); iter!=car->end(); iter++){
+    //     DrawParam thisParam= {
+    //         glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
+    //         Model->topMatrix(),
+    //         Projection->topMatrix(),
+    //         0.1,
+    //         prog,
+    //         iter,
+    //         &(car_material->at(iter->mtlBuf[0])),
+    //         NULL
+    //     };
+  
+    //     render_queue->push(thisParam);
+    //     thisParam.material = NULL;
+    //     shadow_queue->push(thisParam);
+    // }
+		Model->pushMatrix();
+		glUniform3f(prog->getUniform("lightPos"), -2.0, 1.0, 0.0);
+		glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, value_ptr(Projection->topMatrix()));
+		SetView(prog);
+		Model->translate(vec3(0.0, 0.5, 0.0));
+		Model->rotate(0.78, vec3(0,1,0));
+		Model->scale(vec3(0.5,0.5,0.5));
+		glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+		for(auto iter=car->begin(); iter!=car->end(); iter++){
+			SetMaterial(prog, car_material->at(iter->mtlBuf[0]), 0.1);
+			iter->draw(prog);
+		}
     prog->unbind();
+
+    // renderQueue(render_queue);
+    Model->popMatrix();
 
 
     texProg->bind();
@@ -501,7 +486,7 @@ void Application::render(float frametime) {
     glUniform1i(texProg->getUniform("flip"), 1);
     SetMaterial(texProg, mossy_ground_material->at(0));
     SetTexture(texProg, (*mossy_texture));
-    mossy_ground->draw(texProg);
+    mossy_ground->begin()->draw(texProg);
     Model->popMatrix();
 
     texProg->unbind();
@@ -511,3 +496,16 @@ void Application::render(float frametime) {
     Projection->popMatrix();
 
 }
+
+/*
+ = {
+            View->topMatrix(),
+            Model->topMatrix(),
+            Projection->topMatrix(),
+            prog,
+            iter,
+            car_material->at(iter->mtlBuf[0])),
+            NULL
+        };
+        shadow_queue->push();
+*/

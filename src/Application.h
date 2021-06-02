@@ -2,11 +2,14 @@
  * Program 4 example with diffuse and spline camera PRESS 'g'
  * CPE 471 Cal Poly Z. Wood + S. Sueda + I. Dunn (spline D. McGirr)
  */
+#ifndef APPLICATION_H
+#define APPLICATION_H
 
 #include <iostream>
 #include <glad/glad.h>
 #include <chrono> 
 #include <algorithm>
+#include <queue>
 
 #include "GLSL.h"
 #include "Program.h"
@@ -17,6 +20,7 @@
 #include "stb_image.h"
 #include "Bezier.h"
 #include "Spline.h"
+#include "Application_Helpers.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader/tiny_obj_loader.h>
@@ -24,7 +28,6 @@
 // value_ptr for glm
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
 
 class Application : public EventCallbacks
 {
@@ -46,8 +49,10 @@ public:
 	std::shared_ptr<Shape> cube;
 	std::shared_ptr<std::vector<Shape>> car;
 	std::shared_ptr<std::vector<tinyobj::material_t>> car_material;
-	std::shared_ptr<Shape> mossy_ground;
+	std::shared_ptr<std::vector<Shape>> mossy_ground;
 	std::shared_ptr<std::vector<tinyobj::material_t>> mossy_ground_material;
+
+
 
 	struct alpha_compare{
 		std::shared_ptr<std::vector<tinyobj::material_t>> material_list;
@@ -67,12 +72,16 @@ public:
         glm::mat4 V;
         glm::mat4 M;
         glm::mat4 P;
+		float f;
         std::shared_ptr<Program> prog;
-        std::shared_ptr<Shape> shape;
+        std::vector<Shape>::iterator shape;
         tinyobj::material_t* material;
         std::shared_ptr<TexMap> texture;
         void operator()();
     };
+
+    std::shared_ptr<std::queue<DrawParam>> shadow_queue;
+    std::shared_ptr<std::queue<DrawParam>> render_queue;
 	std::shared_ptr<TexMap> mossy_texture;
 	unsigned int oceanMapTexture;
 	unsigned int skyMapTexture;
@@ -130,7 +139,10 @@ public:
 
    	void updateUsingCameraPath(float frametime);
 
-    void render_stack(std::stack<DrawParam> renderStack);
+    void renderQueue(std::shared_ptr<std::queue<DrawParam>> renderQueue);
 
 	void render(float frametime);
 };
+
+
+#endif
