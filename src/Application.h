@@ -61,11 +61,6 @@ public:
 		}
 	};
 
-	struct TexMap{
-		Texture *map_ka;
-		Texture *map_kd;
-		Texture *map_color;
-	};
 
     //
     struct DrawParam{

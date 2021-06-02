@@ -3,8 +3,8 @@ uniform sampler2D map_ka;
 uniform int use_map_ka;
 uniform sampler2D map_kd;
 uniform int use_map_kd;
-uniform sampler2D map_color;
-uniform int use_map_color;
+uniform sampler2D map_ks;
+uniform int use_map_ks;
 uniform vec3 MatAmb;
 uniform vec3 MatDif;
 uniform vec3 MatSpec;
@@ -22,7 +22,6 @@ out vec4 Outcolor;
 
 
 void main() {
-	vec4 texColor0 = texture(map_color, vTexCoord);
 	vec3 VecAmb = MatAmb;
 	if(use_map_ka==1){
 		vec3 ka = texture(map_ka, vTexCoord).xyz;
@@ -33,6 +32,11 @@ void main() {
 		vec3 kd = texture(map_kd, vTexCoord).xyz;
 	 	VecDif = kd * MatDif;
 	}
+	vec3 VecSpec = MatSpec;
+	if(use_map_ks==1){
+		vec3 ks = texture(map_ks, vTexCoord).xyz;
+	 	VecSpec = ks * MatSpec;
+	}
 	
 	float Invert = 1.0f;
 	if(flip < 1){
@@ -42,7 +46,7 @@ void main() {
 	vec3 light = normalize(lightDir);
 	vec3 half_v = normalize(normalize(-EPos) + light);
 	vec3 dif = VecDif*max(0.0, dot(normal, light));
-	vec3 shine = MatSpec*pow(max(dot(half_v, normal), 0.0), MatShine);
+	vec3 shine = VecSpec*pow(max(dot(half_v, normal), 0.0), MatShine);
 	vec3 color = VecAmb +dif+shine+ MatEmit;
 	
 	Outcolor = vec4(color, 1.0);

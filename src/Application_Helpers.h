@@ -18,8 +18,16 @@
 #include "Spline.h"
 
 
+struct TexMap{
+    Texture *map_ka;
+    Texture *map_kd;
+    Texture *map_ks;
+};
+
 void simple_shader_init_uniforms_attributes(std::shared_ptr<Program> prog, std::string vert_shader_path, std::string frag_shader_path);
 void texture_shader_init_uniforms_attributes(std::shared_ptr<Program> prog, std::string vert_shader_path, std::string frag_shader_path);
 void cube_shader_init_uniforms_attributes(std::shared_ptr<Program> prog, std::string vert_shader_path, std::string frag_shader_path);
+
+void load_texture(std::shared_ptr<TexMap> texMap, std::string texDir, tinyobj::material_t material);
 
 #endif

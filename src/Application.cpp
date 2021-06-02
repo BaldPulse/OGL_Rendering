@@ -148,7 +148,7 @@ unsigned int Application::createSky(string dir, vector<string> faces) {
 
     cout << " creating cube map any errors : " << glGetError() << endl;
     return textureID;
-}	
+}
 
 void Application::init(const std::string& resourceDirectory)
 {
@@ -215,19 +215,7 @@ void Application::initGeom(const std::string& resourceDirectory)
     }
     // setup ground material
     mossy_texture = make_shared<TexMap>();
-    mossy_texture->map_kd = new Texture();
-    mossy_texture->map_kd->setFilename((resourceDirectory+"/MossyGroundTexture/"+mossy_ground_material->at(0).diffuse_texname).c_str());
-    mossy_texture->map_kd->init();
-    mossy_texture->map_kd->setUnit(0);
-    mossy_texture->map_kd->setWrapModes(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
-
-    mossy_texture->map_ka = new Texture();
-    mossy_texture->map_ka->setFilename((resourceDirectory+"/MossyGroundTexture/"+mossy_ground_material->at(0).ambient_texname).c_str());
-    mossy_texture->map_ka->init();
-    mossy_texture->map_ka->setUnit(0);
-    mossy_texture->map_ka->setWrapModes(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
-
-    mossy_texture->map_color = NULL;
+    load_texture(mossy_texture, resourceDirectory+"/MossyGroundTexture/", mossy_ground_material->at(0));
 
     // Initialize car mesh.
     vector<tinyobj::shape_t> TOshapesC;
@@ -276,7 +264,7 @@ void SetMaterial(shared_ptr<Program> curS, const tinyobj::material_t &material, 
 }
 
 //helper function to pass texture data to the GPU
-void SetTexture(shared_ptr<Program> curS, const Application::TexMap &texMap) {
+void SetTexture(shared_ptr<Program> curS, const TexMap &texMap) {
     if(texMap.map_ka){
         texMap.map_ka->bind(curS->getUniform("map_ka"));
         glUniform1i(curS->getUniform("use_map_ka"), 1);
@@ -291,12 +279,12 @@ void SetTexture(shared_ptr<Program> curS, const Application::TexMap &texMap) {
     else{
         glUniform1i(curS->getUniform("use_map_kd"), 0);
     }
-    if(texMap.map_color){
-        texMap.map_color->bind(curS->getUniform("map_color"));
-        glUniform1i(curS->getUniform("use_map_color"), 1);
+    if(texMap.map_ks){
+        texMap.map_ks->bind(curS->getUniform("map_ks"));
+        glUniform1i(curS->getUniform("use_map_ks"), 1);
     }
     else{
-        glUniform1i(curS->getUniform("use_map_color"), 0);
+        glUniform1i(curS->getUniform("use_map_ks"), 0);
     }
 }
 
