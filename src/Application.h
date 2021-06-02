@@ -45,6 +45,9 @@ public:
 	//Our shader program for skybox
 	std::shared_ptr<Program> cubeProg;
 
+	//Shader for shadow mapping
+	std::shared_ptr<Program> shadowProg;
+
 	//our geometry
 	std::shared_ptr<Shape> cube;
 	std::shared_ptr<std::vector<Shape>> car;

@@ -177,7 +177,8 @@ void Application::init(const std::string& resourceDirectory)
     cubeProg = make_shared<Program>();
     cube_shader_init_uniforms_attributes(cubeProg, resourceDirectory + "/cube_vert.glsl", resourceDirectory + "/cube_frag.glsl");
 
-
+    shadowProg = make_shared<Program>();
+    shadow_shader_init_uniforms_attributes(shadowProg, resourceDirectory + "/shadow_vert.glsl", resourceDirectory + "/shadow_frag.glsl");
 
     vector<std::string> sky_faces {
         "skybox_px.jpg",
@@ -401,42 +402,62 @@ void Application::render(float frametime) {
     
     Model->pushMatrix();
 
-    cubeProg->bind();
-        Model->pushMatrix();
-        Model->scale(vec3(50.0,50.0,50.0));
-        glUniformMatrix4fv(cubeProg->getUniform("P"), 1, GL_FALSE, value_ptr(Projection->topMatrix()));
-        glDepthFunc(GL_LEQUAL);
-        SetView(cubeProg);
-        glUniformMatrix4fv(cubeProg->getUniform("M"), 1,GL_FALSE,value_ptr(Model->topMatrix()));
-        glBindTexture(GL_TEXTURE_CUBE_MAP, skyMapTexture);
-        cube->draw(cubeProg);
-        glDepthFunc(GL_LESS);
-        Model->popMatrix();
-    cubeProg->unbind();
+    // cubeProg->bind();
+    //     Model->pushMatrix();
+    //     Model->scale(vec3(50.0,50.0,50.0));
+    //     glUniformMatrix4fv(cubeProg->getUniform("P"), 1, GL_FALSE, value_ptr(Projection->topMatrix()));
+    //     glDepthFunc(GL_LEQUAL);
+    //     SetView(cubeProg);
+    //     glUniformMatrix4fv(cubeProg->getUniform("M"), 1,GL_FALSE,value_ptr(Model->topMatrix()));
+    //     glBindTexture(GL_TEXTURE_CUBE_MAP, skyMapTexture);
+    //     cube->draw(cubeProg);
+    //     glDepthFunc(GL_LESS);
+    //     Model->popMatrix();
+    // cubeProg->unbind();
     
     
     vec3 direction_light = vec3(2.0, -1.0, 0.0); //uniform directional light (sun/moon light)
-
-    Model->pushMatrix();
+    mat4 lightProjection = ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 10.0f);
+    mat4 lightView = lookAt(
+                        vec3(-5, 5, 0.0),
+                        vec3(-5, 5, 0.0) + direction_light,
+                        vec3(0.0, 1.0, 0.0)
+                        );
+    
+    unsigned int SHADOW_WIDTH=1024, SHADOW_HEIGHT=1024; //shadow map size
     texProg->bind();
         glUniform3f(texProg->getUniform("lightDir"), direction_light.x, direction_light.y, direction_light.z);
         glUniform1i(texProg->getUniform("flip"), 1);
     texProg->unbind();
-    // glUniformMatrix4fv(texProg->getUniform("P"), 1, GL_FALSE, value_ptr(Projection->topMatrix()));
-    // glUniformMatrix4fv(texProg->getUniform("M"), 1, GL_FALSE, value_ptr(Model->topMatrix()));
+    unsigned int depthMap = create_depthMap(1024, 1024);
+    unsigned int depthMapFBO = bind_depthMap_to_framebuffer(depthMap);
+
+    Model->pushMatrix();
 
     Model->scale(vec3(0.1,0.1,0.1));
     DrawParam thisParam= {
                 glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
                 Model->topMatrix(),
                 Projection->topMatrix(),
-                1.0,
+                0.1,
                 texProg,
                 mossy_ground->begin(),
                 &(mossy_ground_material->at(0)),
                 mossy_texture
             };
     render_queue->push(thisParam);
+    DrawParam shadowParam={
+        lightView,
+        Model->topMatrix(),
+        lightProjection,
+        0.0,
+        shadowProg,
+        mossy_ground->begin(),
+        NULL,
+        NULL
+    };
+    shadow_queue->push(shadowParam);
+
     Model->popMatrix();
 
 
@@ -460,11 +481,27 @@ void Application::render(float frametime) {
                 NULL
             };
             render_queue->push(thisParam);
-            thisParam.material = NULL;
-            shadow_queue->push(thisParam);
+            DrawParam shadowParam={
+                lightView,
+                Model->topMatrix(),
+                lightProjection,
+                0.0,
+                shadowProg,
+                iter,
+                NULL,
+                NULL
+            };
+            shadow_queue->push(shadowParam);
         }
     Model->popMatrix();
-    renderQueue(render_queue);
+    shadowProg->bind();
+    glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+	// glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO); 
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glClear(GL_DEPTH_BUFFER_BIT);
+    shadowProg->unbind();
+    renderQueue(shadow_queue);
+    // renderQueue(render_queue);
 
 
 
@@ -473,16 +510,3 @@ void Application::render(float frametime) {
     Projection->popMatrix();
 
 }
-
-/*
- = {
-            View->topMatrix(),
-            Model->topMatrix(),
-            Projection->topMatrix(),
-            prog,
-            iter,
-            car_material->at(iter->mtlBuf[0])),
-            NULL
-        };
-        shadow_queue->push();
-*/

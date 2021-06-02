@@ -65,6 +65,18 @@ void cube_shader_init_uniforms_attributes(std::shared_ptr<Program> prog, std::st
     prog->addAttribute("vertPos");
     prog->addAttribute("vertNor");
 }
+void shadow_shader_init_uniforms_attributes(std::shared_ptr<Program> prog, std::string vert_shader_path, std::string frag_shader_path){
+    /*
+    init and add uniform variables and attributes for shadow shaders
+    */
+    prog->setVerbose(false);//shut up 
+    prog->setShaderNames(vert_shader_path, frag_shader_path);
+    prog->init();
+    prog->addUniform("P");
+    prog->addUniform("V");
+    prog->addUniform("M");
+    prog->addAttribute("vertPos");
+}
 void load_texture(std::shared_ptr<TexMap> texMap, std::string texDir, tinyobj::material_t material){
 
     /*
@@ -117,4 +129,13 @@ unsigned int create_depthMap(unsigned int shadow_width, unsigned int shadow_heig
     float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
     return depthMap;
+}
+unsigned int bind_depthMap_to_framebuffer(unsigned int depthMap){
+    unsigned int depthMapFBO;
+    glGenFramebuffers(1, &depthMapFBO);  
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    return depthMapFBO;
 }

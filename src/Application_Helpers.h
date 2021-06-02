@@ -27,9 +27,10 @@ struct TexMap{
 void simple_shader_init_uniforms_attributes(std::shared_ptr<Program> prog, std::string vert_shader_path, std::string frag_shader_path);
 void texture_shader_init_uniforms_attributes(std::shared_ptr<Program> prog, std::string vert_shader_path, std::string frag_shader_path);
 void cube_shader_init_uniforms_attributes(std::shared_ptr<Program> prog, std::string vert_shader_path, std::string frag_shader_path);
+void shadow_shader_init_uniforms_attributes(std::shared_ptr<Program> prog, std::string vert_shader_path, std::string frag_shader_path);
 
 void load_texture(std::shared_ptr<TexMap> texMap, std::string texDir, tinyobj::material_t material);
 
 unsigned int create_depthMap(unsigned int shadow_width, unsigned int shadow_height);
-
+unsigned int bind_depthMap_to_framebuffer(unsigned int depthMap);
 #endif
