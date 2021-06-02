@@ -510,6 +510,8 @@ void Application::render(float frametime) {
     prog->bind();
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     bind_depthMap_to_shadowMap(prog, depthMap, 0);
+    mat4 lightSpaceMatrix = lightProjection * lightView;
+    glUniformMatrix4fv(prog->getUniform("lightSpaceMatrix"), 1, GL_FALSE, value_ptr(lightSpaceMatrix));
     prog->unbind();
     renderQueue(render_queue);
 
