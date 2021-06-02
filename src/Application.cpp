@@ -416,10 +416,10 @@ void Application::render(float frametime) {
     
     
     vec3 direction_light = vec3(2.0, -1.0, 0.0); //uniform directional light (sun/moon light)
-    mat4 lightProjection = ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 10.0f);
+    mat4 lightProjection = ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 50.0f);
     mat4 lightView = lookAt(
-                        vec3(-5, 5, 0.0),
-                        vec3(-5, 5, 0.0) + direction_light,
+                        vec3(-2, 1, 0.0),
+                        vec3(-2, 1, 0.0) + direction_light,
                         vec3(0.0, 1.0, 0.0)
                         );
     
@@ -432,13 +432,13 @@ void Application::render(float frametime) {
     unsigned int depthMapFBO = bind_depthMap_to_framebuffer(depthMap);
 
     Model->pushMatrix();
-
-    Model->scale(vec3(0.1,0.1,0.1));
+    Model->translate(vec3(0,9.0,2));
+    // Model->scale(vec3(0.1,0.1,0.1));
     DrawParam thisParam= {
                 glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
                 Model->topMatrix(),
                 Projection->topMatrix(),
-                0.1,
+                1.0,
                 texProg,
                 desert->begin(),
                 &(desert_material->at(0)),
@@ -463,7 +463,7 @@ void Application::render(float frametime) {
     //car
     Model->pushMatrix();
         Model->translate(vec3(0.0, 1.0, 0.0));
-        Model->rotate(0.78, vec3(0,1,0));
+        // Model->rotate(0.78, vec3(0,1,0));
         Model->scale(vec3(0.7,0.7,0.7));
         prog->bind();
         glUniform3f(prog->getUniform("lightDir"), direction_light.x, direction_light.y, direction_light.z);
@@ -513,6 +513,12 @@ void Application::render(float frametime) {
     mat4 lightSpaceMatrix = lightProjection * lightView;
     glUniformMatrix4fv(prog->getUniform("lightSpaceMatrix"), 1, GL_FALSE, value_ptr(lightSpaceMatrix));
     prog->unbind();
+
+    texProg->bind();
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    bind_depthMap_to_shadowMap(texProg, depthMap, 0);
+    glUniformMatrix4fv(texProg->getUniform("lightSpaceMatrix"), 1, GL_FALSE, value_ptr(lightSpaceMatrix));
+    texProg->unbind();
     renderQueue(render_queue);
 
 

@@ -5,11 +5,13 @@ layout(location = 2) in vec2 vertTex;
 uniform mat4 P;
 uniform mat4 M;
 uniform mat4 V;
+uniform mat4 lightSpaceMatrix;
 
 //keep these and set them correctly
 out vec3 fragNor;
 out vec3 EPos;
 out vec2 vTexCoord;
+out vec4 FragPosLightSpace;
 
 void main() {
 
@@ -21,4 +23,5 @@ void main() {
   fragNor = (M * vec4(vertNor, 0.0)).xyz;
   EPos = (V*M*vec4(vertPos, 1.0)).xyz;
   vTexCoord = vertTex;
+	FragPosLightSpace = lightSpaceMatrix* M*vec4(vertPos,1.0);
 }

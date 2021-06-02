@@ -13,14 +13,46 @@ uniform vec3 MatEmit;
 uniform float Alpha;
 uniform int flip; 
 uniform vec3 lightDir;
+uniform sampler2D shadowMap;
 
 
 in vec2 vTexCoord;
 in vec3 fragNor;
 in vec3 EPos;
+in vec4 FragPosLightSpace;
 
 out vec4 Outcolor;
 
+float ShadowCalculation(vec4 fragPosLightSpace)
+{
+    float shadow;
+    // perform perspective divide
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    if(projCoords.z > 1.0){
+        shadow = 0.0;
+    }
+    else{
+        // transform to [0,1] range
+        projCoords = projCoords * 0.5 + 0.5;
+        
+        // get depth of current fragment from light's perspective
+        float currentDepth = projCoords.z;
+        float bias = max(0.05 * (1.0 - dot(fragNor, normalize(lightDir))), 0.005);  
+         
+        //PCF version
+        vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+        for(int x = -1; x <= 1; ++x)
+        {
+            for(int y = -1; y <= 1; ++y)
+            {
+                float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
+                shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+            }    
+        }
+        shadow /= 9.0;
+    }
+	return shadow;       
+}  
 
 void main() {
 	vec3 VecAmb = MatAmb;
@@ -34,8 +66,9 @@ void main() {
 	 	VecDif = kd * MatDif;
 	}
 	vec3 VecSpec = MatSpec;
+	vec3 ks;
 	if(use_map_ks==1){
-		vec3 ks = texture(map_ks, vTexCoord).xyz;
+		ks = texture(map_ks, vTexCoord).xyz;
 	 	VecSpec = ks * MatSpec;
 	}
 	
@@ -46,9 +79,10 @@ void main() {
 	vec3 normal = normalize(Invert * fragNor);
 	vec3 light  = normalize(lightDir);
 	vec3 half_v = normalize(normalize(-EPos) + light);
+	float shadow = ShadowCalculation(FragPosLightSpace);
 	vec3 dif = VecDif*max(0.0, dot(normal, light));
 	vec3 shine = VecSpec*pow(max(dot(half_v, normal), 0.0), MatShine);
-	vec3 color = VecAmb +dif+shine+ MatEmit;
+	vec3 color = VecAmb +(1.0f-shadow)*(dif+shine)+ MatEmit;
 	
 	Outcolor = vec4(color, 1.0);
 }
