@@ -437,13 +437,13 @@ void Application::render(float frametime) {
     // cubeProg->unbind();
     
     
-    vec3 direction_light = vec3(0.0, -1.0, 0.0); //uniform directional light (sun/moon light)
-    mat4 lightProjection = ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 10.0f);
+    vec3 direction_light = vec3(-1.0, -0.5, 0.0); //uniform directional light (sun/moon light)
+    mat4 lightProjection = ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 15.0f);
     // mat4 lightView = glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0));
     mat4 lightView = lookAt(
-                        vec3(0, 3, 0.0),
-                        vec3(0, 3, 0.0) + direction_light,
-                        vec3(1.0, 0.0, 0.0)
+                        vec3(3, 0.5, 0.0),
+                        vec3(0.0,0.0,0.0),
+                        vec3(0.0, 1.0, 0.0)
                         );
     cout<<g_eye.x<<' '<<g_eye.y<<' '<<g_eye.z<<endl;
     cout<<(g_lookAt-g_eye).x<<' '<<(g_lookAt-g_eye).y<<' '<<(g_lookAt-g_eye).z<<endl;
@@ -459,33 +459,34 @@ void Application::render(float frametime) {
     DrawParam thisParam;
     DrawParam shadowParam;
     
-    // Model->pushMatrix();
-    // Model->translate(vec3(0,9.0,2));
-    // // Model->scale(vec3(0.1,0.1,0.1));
-    // thisParam= {
-    //             glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
-    //             Model->topMatrix(),
-    //             Projection->topMatrix(),
-    //             1.0,
-    //             texProg,
-    //             desert->begin(),
-    //             &(desert_material->at(0)),
-    //             desert_texture
-    //         };
-    // render_queue->push(thisParam);
-    // shadowParam={
-    //     lightView,
-    //     Model->topMatrix(),
-    //     lightProjection,
-    //     0.0,
-    //     shadowProg,
-    //     desert->begin(),
-    //     NULL,
-    //     NULL
-    // };
-    // shadow_queue->push(shadowParam);
+    Model->pushMatrix();
+    Model->translate(vec3(0,9.0,2));
+    // Model->scale(vec3(0.1,0.1,0.1));
+    thisParam= {
+                glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
+                Model->topMatrix(),
+                Projection->topMatrix(),
+                1.0,
+                texProg,
+                desert->begin(),
+                &(desert_material->at(0)),
+                NULL
+                // desert_texture
+            };
+    render_queue->push(thisParam);
+    shadowParam={
+        lightView,
+        Model->topMatrix(),
+        lightProjection,
+        0.0,
+        shadowProg,
+        desert->begin(),
+        NULL,
+        NULL
+    };
+    shadow_queue->push(shadowParam);
 
-    // Model->popMatrix();
+    Model->popMatrix();
 
 
     // //car
@@ -524,17 +525,17 @@ void Application::render(float frametime) {
 
     //bunny for reference
     Model->pushMatrix();
-    // thisParam= {
-    //             glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
-    //             Model->topMatrix(),
-    //             Projection->topMatrix(),
-    //             1.0,
-    //             prog,
-    //             theBunny->begin(),
-    //             NULL,
-    //             NULL
-    //         };
-    // render_queue->push(thisParam);
+    thisParam= {
+                glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
+                Model->topMatrix(),
+                Projection->topMatrix(),
+                1.0,
+                prog,
+                theBunny->begin(),
+                NULL,
+                NULL
+            };
+    render_queue->push(thisParam);
     shadowParam={
         lightView,
         Model->topMatrix(),
@@ -550,6 +551,7 @@ void Application::render(float frametime) {
 
 
     Model->pushMatrix();
+        Model->translate(vec3(3.0, 0.0, 0.0));
     thisParam= {
                 glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
                 Model->topMatrix(),
@@ -568,7 +570,7 @@ void Application::render(float frametime) {
     shadowProg->bind();
     glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO); 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClear(GL_DEPTH_BUFFER_BIT);
     shadowProg->unbind();
     renderQueue(shadow_queue);
@@ -581,29 +583,16 @@ void Application::render(float frametime) {
     bind_depthMap_to_shadowMap(prog, depthMap, 0);
     mat4 lightSpaceMatrix = lightProjection * lightView;
     glUniformMatrix4fv(prog->getUniform("lightSpaceMatrix"), 1, GL_FALSE, value_ptr(lightSpaceMatrix));
-    // glUniform3f(prog->getUniform("MatAmb"), 0.1,0.1,0.1);
-    // glUniform3f(prog->getUniform("MatDif"), 0.5,0.1,0.1);
-    // glUniform3f(prog->getUniform("MatSpec"), 0.5,0.1,0.1);
-    // glUniform1f(prog->getUniform("MatShine"), 100.0);
-    // glUniform3f(prog->getUniform("MatEmit"), 0.0,0.0,0.0);
-    // glUniform1f(prog->getUniform("Alpha"), 1.0);
     prog->unbind();
 
     texProg->bind();
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glActiveTexture(GL_TEXTURE0 + 0);
+    glActiveTexture(GL_TEXTURE0 + 1);
     glBindTexture(GL_TEXTURE_2D, depthMap);
-    glUniform1i(texProg->getUniform("map_kd"), 0);
+    glUniform1i(texProg->getUniform("map_kd"), 1);
     // desert_texture->map_kd->bind(texProg->getUniform("map_kd"));
     glUniform1i(texProg->getUniform("use_map_kd"), 1);
     glUniformMatrix4fv(texProg->getUniform("lightSpaceMatrix"), 1, GL_FALSE, value_ptr(lightSpaceMatrix));
-    glUniform3f(texProg->getUniform("MatAmb"), 0.1,0.1,0.1);
     glUniform3f(texProg->getUniform("MatDif"), 1.0,1.0,1.0);
-    glUniform3f(texProg->getUniform("MatSpec"), 0.1,0.1,0.1);
-    glUniform1f(texProg->getUniform("MatShine"), 100.0);
-    glUniform3f(texProg->getUniform("MatEmit"), 0.0,0.0,0.0);
-    glUniform1f(texProg->getUniform("Alpha"), 1.0);
-    // theCube->begin()->draw(texProg);
     texProg->unbind();
     renderQueue(render_queue);
 
