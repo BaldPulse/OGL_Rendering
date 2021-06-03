@@ -77,12 +77,12 @@ void main() {
 		 Invert = -1.0f;
 	}
 	vec3 normal = normalize(Invert * fragNor);
-	vec3 light  = normalize(lightDir);
+	vec3 light  = -normalize(lightDir);
 	vec3 half_v = normalize(normalize(-EPos) + light);
 	float shadow = ShadowCalculation(FragPosLightSpace);
 	vec3 dif = VecDif*max(0.0, dot(normal, light));
 	vec3 shine = VecSpec*pow(max(dot(half_v, normal), 0.0), MatShine);
-	vec3 color = VecAmb +(1.0f-shadow)*(dif+shine)+ MatEmit;
+	vec3 color = VecAmb +(1.0-shadow)*(dif+shine)+ MatEmit;
 	
 	Outcolor = vec4(color, 1.0);
 }

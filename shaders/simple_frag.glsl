@@ -50,7 +50,7 @@ void main()
 {
 	//you will need to work with these for lighting
 	vec3 normal = normalize(fragNor);
-	vec3 light  = normalize(lightDir);
+	vec3 light  = -normalize(lightDir);
 	vec3 half_v = normalize(normalize(-EPos) + light);
 	float shadow = ShadowCalculation(FragPosLightSpace);
 	vec3 dif_component = MatDif*max(0.0, dot(normal, light));
@@ -58,6 +58,7 @@ void main()
 	float trans_index = Alpha;
 	if(Alpha < 0.99)
 		trans_index = (trans_index + length(spec_component))/(1.0f+Alpha);
-	color = vec4(MatAmb +dif_component+spec_component+MatEmit, trans_index);
+    // if(shadow==0.0)
+	color = vec4(MatAmb +(1.0-shadow)*(dif_component+spec_component)+MatEmit, trans_index);
 	// color = vec4(vec3(1.0-shadow, 0.0,0.0), 1.0);
 }

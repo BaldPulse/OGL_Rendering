@@ -49,6 +49,8 @@ void texture_shader_init_uniforms_attributes(std::shared_ptr<Program> prog, std:
     prog->addUniform("MatEmit");
     prog->addUniform("Alpha");
     prog->addUniform("lightDir");
+    prog->addUniform("lightSpaceMatrix");
+    prog->addUniform("shadowMap");
     prog->addAttribute("vertPos");
     prog->addAttribute("vertNor");
     prog->addAttribute("vertTex");

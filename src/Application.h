@@ -101,6 +101,7 @@ public:
 	glm::vec3 strafe = glm::vec3(1, 0, 0);
 	glm::vec3 g_eye = glm::vec3(0, 1, 3);
 	glm::vec3 g_lookAt ;//= glm::vec3(0, 1, -4);
+	glm::vec3 look_dir;
 	glm::vec3 g_usereye = g_eye;
 
 	Spline splinepath[2];
