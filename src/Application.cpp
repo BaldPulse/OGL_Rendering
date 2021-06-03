@@ -415,22 +415,22 @@ void Application::render(float frametime) {
     
     Model->pushMatrix();
 
-    // cubeProg->bind();
-    //     Model->pushMatrix();
-    //     Model->scale(vec3(50.0,50.0,50.0));
-    //     glUniformMatrix4fv(cubeProg->getUniform("P"), 1, GL_FALSE, value_ptr(Projection->topMatrix()));
-    //     glDepthFunc(GL_LEQUAL);
-    //     SetView(cubeProg);
-    //     glUniformMatrix4fv(cubeProg->getUniform("M"), 1,GL_FALSE,value_ptr(Model->topMatrix()));
-    //     glBindTexture(GL_TEXTURE_CUBE_MAP, skyMapTexture);
-    //     cube->draw(cubeProg);
-    //     glDepthFunc(GL_LESS);
-    //     Model->popMatrix();
-    // cubeProg->unbind();
+    cubeProg->bind();
+        Model->pushMatrix();
+        Model->scale(vec3(50.0,50.0,50.0));
+        glUniformMatrix4fv(cubeProg->getUniform("P"), 1, GL_FALSE, value_ptr(Projection->topMatrix()));
+        glDepthFunc(GL_LEQUAL);
+        SetView(cubeProg);
+        glUniformMatrix4fv(cubeProg->getUniform("M"), 1,GL_FALSE,value_ptr(Model->topMatrix()));
+        glBindTexture(GL_TEXTURE_CUBE_MAP, skyMapTexture);
+        cube->draw(cubeProg);
+        glDepthFunc(GL_LESS);
+        Model->popMatrix();
+    cubeProg->unbind();
     
     
     vec3 direction_light = vec3(-2.0, -1.0, 0.0); //uniform directional light (sun/moon light)
-    mat4 lightProjection = ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 10.0f);
+    mat4 lightProjection = ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.0f, 13.0f);
     // mat4 lightView = glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0));
     mat4 lightView = lookAt(
                         vec3(5, 3, 0.0),
@@ -541,7 +541,7 @@ void Application::render(float frametime) {
     Model->popMatrix();
 
     //render shadow map first
-    glCullFace(GL_FRONT);
+    // glCullFace(GL_FRONT);
     shadowProg->bind();
     glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO); 

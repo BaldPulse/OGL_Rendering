@@ -88,7 +88,7 @@ public:
 	//animation data
 	float lightTrans = 0;
 
-	unsigned int SHADOW_WIDTH=1024, SHADOW_HEIGHT=1024; //shadow map size
+	unsigned int SHADOW_WIDTH=2048, SHADOW_HEIGHT=2048; //shadow map size
 	unsigned int depthMap;
     unsigned int depthMapFBO;
 
