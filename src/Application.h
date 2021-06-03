@@ -51,6 +51,7 @@ public:
 	//our geometry
 	std::shared_ptr<Shape> cube;
 	std::shared_ptr<std::vector<Shape>> car;
+	std::shared_ptr<std::vector<Shape>> theBunny;
 	std::shared_ptr<std::vector<tinyobj::material_t>> car_material;
 	std::shared_ptr<std::vector<Shape>> desert;
 	std::shared_ptr<std::vector<tinyobj::material_t>> desert_material;

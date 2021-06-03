@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
 {
 	// Where the resources are loaded from
 	std::string resourceDir = "../resources";
+	std::string shaderDir = "../shaders";
 
 	if (argc >= 2)
 	{
@@ -45,7 +46,7 @@ int main(int argc, char *argv[])
 	// This is the code that will likely change program to program as you
 	// may need to initialize or set up different data and state
 
-	application->init(resourceDir);
+	application->init(shaderDir);
 	application->initGeom(resourceDir);
 
 	auto lastTime = chrono::high_resolution_clock::now();
