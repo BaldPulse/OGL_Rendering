@@ -38,7 +38,7 @@ float ShadowCalculation(vec4 fragPosLightSpace)
             for(int y = -1; y <= 1; ++y)
             {
                 float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
-                shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
+                shadow += currentDepth > pcfDepth ? 1.0 : 0.0;
             }    
         }
         shadow /= 9.0;
@@ -59,6 +59,13 @@ void main()
 	if(Alpha < 0.99)
 		trans_index = (trans_index + length(spec_component))/(1.0f+Alpha);
     // if(shadow==0.0)
-	color = vec4(MatAmb +(1.0-shadow)*(dif_component+spec_component)+MatEmit, trans_index);
-	// color = vec4(vec3(1.0-shadow, 0.0,0.0), 1.0);
+	// color = vec4(MatAmb +(1.0-shadow)*(dif_component+spec_component)+MatEmit, trans_index);
+    vec3 projCoords = FragPosLightSpace.xyz / FragPosLightSpace.w;
+    float closest = texture(shadowMap, projCoords.xy).r;
+    if(closest>1.0)
+	    color = vec4(vec3(1.0, 0.0,0.0), 1.0);
+    if(closest<1.0)
+	    color = vec4(vec3(0.0, 1.0,0.0), 1.0);
+    if(closest==1.0)
+	    color = vec4(vec3(0.0, 0.0,1.0), 1.0);
 }
