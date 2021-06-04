@@ -556,9 +556,10 @@ void Application::render(float frametime) {
 
 #define THEIGHT  70
 #define TWIDTH  70
+#define TTEX 1 //every unit is divided into ten smaller tex units
 void add_vert_to_terrain(const int &x,const int &z, const float &v_x, const float &v_z, const float &v_y, float*terrain_map, float *terrain_map_density){
     int index = (x+THEIGHT/2)*TWIDTH + (z+TWIDTH/2);
-    float weight = 1.0f;// / ( distance(vec2((float) x, (float) z), vec2(v_x, v_z)) + 0.01);
+    float weight = 1 / ( distance(vec2((float) x, (float) z), vec2(v_x, v_z)) + 0.01);
     
     terrain_map[index] += weight * v_y;
     float prev_w = terrain_map_density[index];
@@ -580,9 +581,9 @@ void Application::obj_to_terrain_map(){
     
 
     tinyobj::shape_t terrain = terrainV.at(0);
-    float* terrain_map = new float[THEIGHT*TWIDTH];
-    float* terrain_map_density = new float[THEIGHT*TWIDTH];
-    for(int i=0; i<THEIGHT*TWIDTH; i++){
+    float* terrain_map = new float[THEIGHT*TTEX*TWIDTH*TTEX];
+    float* terrain_map_density = new float[THEIGHT*TTEX*TWIDTH*TTEX];
+    for(int i=0; i<THEIGHT*TTEX*TWIDTH*TTEX; i++){
         terrain_map[i] = 0.0f;
         terrain_map_density[i] = 0.0001f;
     }
