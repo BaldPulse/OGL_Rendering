@@ -144,3 +144,88 @@ void obj_to_terrain_map(){
     delete[] terrain_map;
     delete[] terrain_map_density;
 }
+
+
+void SplitBySpace(string s, vector<string>* words){
+    // cout<<"splitting"<<endl;
+    size_t pos=0;
+    string space_delimiter = " ";
+    while ((pos = s.find(space_delimiter)) != string::npos) {
+        words->push_back(s.substr(0, pos));
+        s.erase(0, pos + space_delimiter.length());
+    }
+    // cout<<"last substring "<<s.substr(0, s.size())<<endl;
+    words->push_back(s.substr(0, s.size()));
+}
+
+int TerrainHeightMap::LoadHeightMap(std::string path){
+    ifstream tFile;
+    tFile.open(path);
+    string line;
+    if(!tFile.is_open()){
+        cerr<<"Unable to open file: "<<path<<endl;
+        return 1;
+    }
+    vector<string> *words = new vector<string>;
+
+    getline(tFile, line);
+    SplitBySpace(line, words);
+    this->tHeight = stoi(words->at(0));
+    // cout<<"word size "<<words->size()<<endl;
+    this->tWidth = stoi(words->at(1));
+
+    getline(tFile, line);
+    words->clear();
+    SplitBySpace(line, words);
+    this->tTex = stoi(words->at(0));
+
+    int h_size = this->tHeight * this->tTex * this->tWidth * this->tTex;
+    this->h_map = new float[h_size];
+    int i=0;
+    while(getline(tFile, line) && i<h_size){
+        words->clear();
+        SplitBySpace(line, words);
+        this->h_map[i] = stof(words->at(0));
+        i++;
+    }
+    if(i!=h_size){
+        cerr<<"dimension mismatch, expected "<<h_size<<" read "<<i<<" lines"<<endl;
+        return 1;
+    }
+
+    delete words;
+    return 0;
+}
+
+float TerrainHeightMap::GetHeight(float x, float z){
+    //check for out of range
+    if(z < -(float)this->tHeight/2 || z>(float)this->tHeight/2
+    || x < -(float)this->tWidth/2 || x>(float)this->tWidth/2){
+        cerr<<"x "<<x<<" z "<<z<<" out of bound for " << this->tWidth<<' '<<this->tHeight<<endl;
+        return 0.0;
+    }
+    //height averaging
+    float x_h = (x+(float)(this->tWidth) /2)*(float)(this->tTex);
+    float z_h = (z+(float)(this->tHeight)/2)*(float)(this->tTex);
+    float weight = 0.0;
+    float height = 0.0;
+    float total_weight = 0.0;
+
+    weight = distance(vec2(x_h, z_h), vec2((int)x_h, (int)z_h));
+    height += weight * this->h_map[(this->tWidth)*(int)z_h + (int)x_h];
+    total_weight += weight;
+
+    weight = distance(vec2(x_h, z_h), vec2((int)x_h+1, (int)z_h));
+    height += weight * this->h_map[(this->tWidth)*(int)z_h + (int)x_h+1];
+    total_weight += weight;
+
+    weight = distance(vec2(x_h, z_h), vec2((int)x_h, (int)z_h+1));
+    height += weight * this->h_map[(this->tWidth)*(int)z_h+1 + (int)x_h];
+    total_weight += weight;
+
+    weight = distance(vec2(x_h, z_h), vec2((int)x_h+1, (int)z_h+1));
+    height += weight * this->h_map[(this->tWidth)*(int)z_h+1 + (int)x_h+1];
+    total_weight += weight;
+
+    return height/total_weight;
+}

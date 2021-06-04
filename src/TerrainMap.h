@@ -21,4 +21,19 @@ void average_surrounding(float*terrain_map, int i, int j);
 
 void obj_to_terrain_map();
 
+
+class TerrainHeightMap
+{
+public:
+    TerrainHeightMap(){h_map=NULL;}
+    ~TerrainHeightMap(){if(h_map) delete[] h_map;}
+    int LoadHeightMap(std::string path);
+
+    float GetHeight(float x, float z);
+private:
+    float *h_map;
+    int tHeight, tWidth;
+    int tTex;
+};
+
 #endif

@@ -187,7 +187,7 @@ void Application::init(const std::string& resourceDirectory)
     depthMap = create_depthMap(1024, 1024);
     depthMapFBO = bind_depthMap_to_framebuffer(depthMap);
 
-
+    terrainHeightMap.LoadHeightMap("../resources/Desert/Dune_hmap.txt");
 }
 
 void Application::initGeom(const std::string& resourceDirectory)

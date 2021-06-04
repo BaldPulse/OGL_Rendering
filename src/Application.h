@@ -51,6 +51,8 @@ public:
 	//Shader for shadow mapping
 	std::shared_ptr<Program> shadowProg;
 
+	TerrainHeightMap terrainHeightMap;
+
 	//our geometry
 	std::shared_ptr<Shape> cube;
 	std::shared_ptr<std::vector<Shape>> car;
