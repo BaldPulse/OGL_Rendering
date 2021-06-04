@@ -245,12 +245,12 @@ void Application::initGeom(const std::string& resourceDirectory)
         cube->init();
     }
     vector<std::string> sky_faces {
-        "skybox_px.jpg",
-        "skybox_nx.jpg",
-        "skybox_py.jpg",
-        "skybox_ny.jpg",
-        "skybox_pz.jpg",
-        "skybox_nz.jpg"
+        "TropicalSunnyDay_px.jpg",
+        "TropicalSunnyDay_nx.jpg",
+        "TropicalSunnyDay_py.jpg",
+        "TropicalSunnyDay_ny.jpg",
+        "TropicalSunnyDay_pz.jpg",
+        "TropicalSunnyDay_nz.jpg"
     };
 
     skyMapTexture = createSky(resourceDirectory+"/sky/", sky_faces);
@@ -425,7 +425,7 @@ void Application::render(float frametime) {
 
     cubeProg->bind();
         Model->pushMatrix();
-        Model->scale(vec3(50.0,50.0,50.0));
+        Model->scale(vec3(100.0,100.0,100.0));
         glUniformMatrix4fv(cubeProg->getUniform("P"), 1, GL_FALSE, value_ptr(Projection->topMatrix()));
         glDepthFunc(GL_LEQUAL);
         SetView(cubeProg);
@@ -436,7 +436,7 @@ void Application::render(float frametime) {
         Model->popMatrix();
     cubeProg->unbind();
     
-    vec3 light_eye = vec3(3, 1, 0.0);
+    vec3 light_eye = vec3(-3, 5, -10);
     vec3 light_lookat = vec3(0.0,0.0,0.0);
     vec3 direction_light = light_lookat-light_eye; //uniform directional light (sun/moon light)
     mat4 lightProjection = ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 15.0f);
@@ -525,7 +525,6 @@ void Application::render(float frametime) {
     shadowProg->bind();
     glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO); 
-    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClear(GL_DEPTH_BUFFER_BIT);
     shadowProg->unbind();
     renderQueue(shadow_queue);
@@ -543,7 +542,6 @@ void Application::render(float frametime) {
     texProg->bind();
     bind_depthMap_to_shadowMap(texProg, depthMap, 5);
     glUniformMatrix4fv(texProg->getUniform("lightSpaceMatrix"), 1, GL_FALSE, value_ptr(lightSpaceMatrix));
-    glUniform3f(texProg->getUniform("MatDif"), 1.0,1.0,1.0);
     texProg->unbind();
     renderQueue(render_queue);
 
