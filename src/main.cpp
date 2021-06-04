@@ -80,7 +80,6 @@ int main(int argc, char *argv[])
 	// Quit program.
 	windowManager->shutdown();
 	*/
-	Application *application = new Application();
-	application->obj_to_terrain_map();
+	obj_to_terrain_map();
 	return 0;
 }

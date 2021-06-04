@@ -23,6 +23,7 @@
 #include "Bezier.h"
 #include "Spline.h"
 #include "Application_Helpers.h"
+#include "TerrainMap.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader/tiny_obj_loader.h>
