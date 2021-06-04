@@ -2,7 +2,7 @@
 
 #define THEIGHT  60
 #define TWIDTH  60
-#define TTEX 4 //every unit is divided into ten smaller tex units
+#define TTEX 1 //every unit is divided into ten smaller tex units
 
 using namespace std;
 using namespace glm;
@@ -197,6 +197,22 @@ int TerrainHeightMap::LoadHeightMap(std::string path){
     return 0;
 }
 
+float Barycentric(vec2 p, vec2 a, vec2 b, vec2 c, const float &ay, const float &by, const float &cy)
+{
+    vec2 v0 = b - a, v1 = c - a, v2 = p - a;
+    float d00 = dot(v0, v0);
+    float d01 = dot(v0, v1);
+    float d11 = dot(v1, v1);
+    float d20 = dot(v2, v0);
+    float d21 = dot(v2, v1);
+    float denom = d00 * d11 - d01 * d01;
+    float u, v, w;
+    v = (d11 * d20 - d01 * d21) / denom;
+    w = (d00 * d21 - d01 * d20) / denom;
+    u = 1.0f - v - w;
+    return u*ay + v*by + w*cy;
+}
+
 float TerrainHeightMap::GetHeight(float x, float z){
     //check for out of range
     if(z < -(float)this->tHeight/2 || z>(float)this->tHeight/2
@@ -207,25 +223,57 @@ float TerrainHeightMap::GetHeight(float x, float z){
     //height averaging
     float x_h = (x+(float)(this->tWidth) /2)*(float)(this->tTex);
     float z_h = (z+(float)(this->tHeight)/2)*(float)(this->tTex);
-    float weight = 0.0;
+
+    int ax = int(x_h);
+    int az = int(z_h);
+    float ay = this->h_map[(this->tWidth)*az + ax];
+
+    int bx = int(x_h)+1;
+    int bz = int(z_h);
+    float by = this->h_map[(this->tWidth)*bz + bx];
+
+    int cx = int(x_h);
+    int cz = int(z_h)+1;
+    float cy = this->h_map[(this->tWidth)*cz + cx];
+
+    int dx = int(x_h)+1;
+    int dz = int(z_h)+1;
+    float dy = this->h_map[(this->tWidth)*dz + dx];
+
+    float xr = x_h - (float)ax;
+    float zr = z_h - (float)az;
+
     float height = 0.0;
-    float total_weight = 0.0;
+    if(xr+zr>1.0){
+        height = Barycentric(vec2(x_h, z_h), vec2(bx, bz), vec2(cx, cz), vec2(dx, dz),
+            by, cy, dy);
+    }
+    else{
+        height = Barycentric(vec2(x_h, z_h), vec2(bx, bz), vec2(cx, cz), vec2(ax, az),
+            by, cy, ay);
+    }
 
-    weight = distance(vec2(x_h, z_h), vec2((int)x_h, (int)z_h));
-    height += weight * this->h_map[(this->tWidth)*(int)z_h + (int)x_h];
-    total_weight += weight;
+    return height;
 
-    weight = distance(vec2(x_h, z_h), vec2((int)x_h+1, (int)z_h));
-    height += weight * this->h_map[(this->tWidth)*(int)z_h + (int)x_h+1];
-    total_weight += weight;
+    // float weight = 0.0;
+    // float height = 0.0;
+    // float total_weight = 0.0;
 
-    weight = distance(vec2(x_h, z_h), vec2((int)x_h, (int)z_h+1));
-    height += weight * this->h_map[(this->tWidth)*(int)z_h+1 + (int)x_h];
-    total_weight += weight;
+    // weight = 1/(distance(vec2(x_h, z_h), vec2((int)x_h, (int)z_h))+0.0001f);
+    // height += weight * this->h_map[(this->tWidth)*(int)z_h + (int)x_h];
+    // total_weight += weight;
 
-    weight = distance(vec2(x_h, z_h), vec2((int)x_h+1, (int)z_h+1));
-    height += weight * this->h_map[(this->tWidth)*(int)z_h+1 + (int)x_h+1];
-    total_weight += weight;
+    // weight = 1/(distance(vec2(x_h, z_h), vec2((int)x_h+1, (int)z_h))+0.0001f);
+    // height += weight * this->h_map[(this->tWidth)*(int)z_h + (int)x_h+1];
+    // total_weight += weight;
 
-    return height/total_weight;
+    // weight = 1/(distance(vec2(x_h, z_h), vec2((int)x_h, (int)z_h+1))+0.0001f);
+    // height += weight * this->h_map[(this->tWidth)*(int)z_h+1 + (int)x_h];
+    // total_weight += weight;
+
+    // weight = 1/(distance(vec2(x_h, z_h), vec2((int)x_h+1, (int)z_h+1))+0.0001f);
+    // height += weight * this->h_map[(this->tWidth)*(int)z_h+1 + (int)x_h+1];
+    // total_weight += weight;
+
+    // return height/total_weight;
 }

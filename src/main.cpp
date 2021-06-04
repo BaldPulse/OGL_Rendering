@@ -24,6 +24,7 @@ using namespace glm;
 
 int main(int argc, char *argv[])
 {
+	obj_to_terrain_map();
 	
 	// Where the resources are loaded from
 	std::string resourceDir = "../resources";
@@ -80,7 +81,6 @@ int main(int argc, char *argv[])
 	// Quit program.
 	windowManager->shutdown();
 
-	// obj_to_terrain_map();
 	// TerrainHeightMap terrainHeightMap;
 	// string resourceDir = "../resources";
 	// terrainHeightMap.LoadHeightMap(resourceDir + "/Desert/Dune_hmap.txt");
