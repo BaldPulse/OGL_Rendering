@@ -559,7 +559,7 @@ void Application::render(float frametime) {
 #define TTEX 4 //every unit is divided into ten smaller tex units
 void add_vert_to_terrain(const int &x,const int &z, const float &v_x, const float &v_z, const float &v_y, 
     float*terrain_map, float *terrain_map_density, char* terrain_map_set){
-    int index = (x+THEIGHT*TTEX/2)*TWIDTH*TTEX + (z+TWIDTH*TTEX/2);
+    int index = (z+THEIGHT*TTEX/2)*TWIDTH*TTEX + (x+TWIDTH*TTEX/2);
     float weight = 1 / ( distance(vec2((float) x, (float) z), vec2(v_x, v_z)) + 0.01);
     
     terrain_map[index] += weight * v_y;
@@ -572,22 +572,30 @@ void add_vert_to_terrain(const int &x,const int &z, const float &v_x, const floa
 }
 
 void average_surrounding(float*terrain_map, int i, int j){
-    int w_min = std::min(0, i-1);
-    int w_max = std::max(THEIGHT*TTEX, i+2);
-    int h_min = std::min(0, j-1);
-    int h_max = std::max(TWIDTH*TTEX, j+2);
-    float sum = 0.0f;
-    int count = 0;
+    int w_min = std::max(0, i-1);
+    int w_max = std::min(THEIGHT*TTEX, i+2);
+    int h_min = std::max(0, j-1);
+    int h_max = std::min(TWIDTH*TTEX, j+2);
+    float sum = 0.0;
+    sum += terrain_map[i*TWIDTH*TTEX + j];
+    float count = 0.0f;
+    if(sum != 0.0){
+        count+=1.0;
+    }
     for(int u=w_min; u<w_max; u++){
         for(int v=h_min; v<h_max; v++){
+            if(u==i && v==j)
+                continue;
+            // cout<<"suming "<<terrain_map[u*TWIDTH*TTEX + v]<<endl;
             sum+=terrain_map[u*TWIDTH*TTEX + v];
-            count ++;
+            count += 1.0f;
         }
     }
-    if(terrain_map[i+j*TWIDTH*TTEX] > 0.0001){
-        count++;
-    }
-    terrain_map[i+j*TWIDTH*TTEX] = (int)(sum/(float)count);
+    // if(count<1.0)
+    //     cout<<"count "<<count<<endl;
+    // if(sum>100.0)
+        cout<<"sum1 "<<sum<<endl;
+    terrain_map[i*TWIDTH*TTEX+j] = (sum/count);
 }
 
 void Application::obj_to_terrain_map(){
@@ -644,6 +652,25 @@ void Application::obj_to_terrain_map(){
         if(abs(terrain_map[i])>100){
             cout<<"big h occured "<<i/(TWIDTH*TTEX)-THEIGHT*TTEX/2<<' '<<i%(TWIDTH*TTEX)-TWIDTH*TTEX/2<<'\t'<<terrain_map[i]<<'\t'<<prv<<'\t'<<terrain_map_density[i]<<endl;
         }
+    }
+
+
+    for(int k=0; k<3; k++){
+        for(int i=0; i<THEIGHT*TTEX; i++){
+            for(int j=0; j<TWIDTH*TTEX; j++){
+                if(terrain_map[i*TWIDTH*TTEX + j] ==0.0){
+                    terrain_map_set[i*TWIDTH*TTEX + j]==0;
+                }
+                if(terrain_map_set[i*TWIDTH*TTEX + j]==0){
+                    cout<<i<<' '<<j<<endl;
+                    average_surrounding(terrain_map, i, j);
+                    cout<<"after average"<<terrain_map[i*TWIDTH*TTEX + j]<<endl;
+                }
+            }
+        }
+    }
+
+    for(int i=0; i<THEIGHT*TTEX*TWIDTH*TTEX; i++){
         if(terrain_map[i]>max)
             max = terrain_map[i];
         if(terrain_map[i]<min)
@@ -651,24 +678,13 @@ void Application::obj_to_terrain_map(){
         terrain_map_file<<terrain_map[i]<<endl;
     }
 
-
-    // for(int k=0; k<3; k++){
-        for(int i=0; i<THEIGHT*TTEX; i++){
-            for(int j=0; j<TWIDTH*TTEX; j++){
-                if(terrain_map_set[i*TWIDTH*TTEX + j]==0){
-                    average_surrounding(terrain_map, i, j);
-                }
-            }
-        }
-    // }
-
-    cout<<min<<' '<<max<<endl;
+    cout<<"min "<<min<<" min "<<max<<endl;
     float range_k = 256/(max-min);
     cout<<"range_k"<<range_k<<endl;
     terrain_map_ppm<<255<<endl;
     for(int i=0; i<TWIDTH*TTEX; i++){
         for(int j=0; j<THEIGHT*TTEX; j++){
-            int h_val = (int) ((terrain_map[i + j*TWIDTH*TTEX] - min)*range_k);
+            int h_val = (int) ((terrain_map[i*TWIDTH*TTEX + j] - min)*range_k);
             terrain_map_ppm<<h_val<<' '<<h_val<<' '<<h_val<<'\t';
         }
         terrain_map_ppm<<endl;
