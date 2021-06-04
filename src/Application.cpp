@@ -211,23 +211,23 @@ void Application::initGeom(const std::string& resourceDirectory)
     desert_texture = make_shared<TexMap>();
     load_texture(desert_texture, resourceDirectory+"/Desert/", desert_material->at(0));
 
-    // // Initialize car mesh.
-    // vector<tinyobj::shape_t> TOshapesC;
-    // // load in the mesh and make the shape(s)
-    // car_material = make_shared<vector<tinyobj::material_t>>();
-    // rc = tinyobj::LoadObj(TOshapesC, *car_material, errStr, 
-    //     (resourceDirectory + "/Toyota_Tacoma" + "/Toyota_Tacoma_2020.obj").c_str(), (resourceDirectory+"/Toyota_Tacoma/").c_str());
-    // if (!rc) {
-    //     cerr << errStr << endl;
-    // } else {
-    //     car = make_shared<vector<Shape>>();
-    //     write_to_obj(car, TOshapesC);
-    // }
-    // cout<<"car mat size "<<car_material->size()<<endl;
-    // //To ensure transparency works with z-buffer testing, sort obj vector in terms of alpha value
-    // alpha_compare comp;
-    // comp.material_list = car_material;
-    // std::sort(car->begin(), car->end(), comp);
+    // Initialize car mesh.
+    vector<tinyobj::shape_t> TOshapesC;
+    // load in the mesh and make the shape(s)
+    car_material = make_shared<vector<tinyobj::material_t>>();
+    rc = tinyobj::LoadObj(TOshapesC, *car_material, errStr, 
+        (resourceDirectory + "/Toyota_Tacoma" + "/Toyota_Tacoma_2020.obj").c_str(), (resourceDirectory+"/Toyota_Tacoma/").c_str());
+    if (!rc) {
+        cerr << errStr << endl;
+    } else {
+        car = make_shared<vector<Shape>>();
+        write_to_obj(car, TOshapesC);
+    }
+    cout<<"car mat size "<<car_material->size()<<endl;
+    //To ensure transparency works with z-buffer testing, sort obj vector in terms of alpha value
+    alpha_compare comp;
+    comp.material_list = car_material;
+    std::sort(car->begin(), car->end(), comp);
 
 
 
@@ -436,8 +436,8 @@ void Application::render(float frametime) {
         Model->popMatrix();
     cubeProg->unbind();
     
-    vec3 light_eye = vec3(-3, 5, -10);
-    vec3 light_lookat = vec3(0.0,0.0,0.0);
+    vec3 light_eye = vec3(g_eye.x-3.0, 5, g_eye.y-10.0);
+    vec3 light_lookat = vec3(g_eye.x,0.0,g_eye.y);
     vec3 direction_light = light_lookat-light_eye; //uniform directional light (sun/moon light)
     mat4 lightProjection = ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 15.0f);
     mat4 lightView = lookAt(
@@ -486,67 +486,66 @@ void Application::render(float frametime) {
     Model->popMatrix();
 
     float offset_height = 9.0;
-    Model->pushMatrix();
-    // Model->scale(vec3(0.1,0.1,0.1));
-    Model->translate(vec3(g_eye.x,terrainHeightMap.GetHeight(g_eye.x, g_eye.z+2.0)+offset_height-0.3 ,g_eye.z+2.0));
-    thisParam= {
-                glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
-                Model->topMatrix(),
-                Projection->topMatrix(),
-                1.0,
-                prog,
-                theBunny->begin(),
-                &(desert_material->at(0)),
-                NULL
-            };
-    render_queue->push(thisParam);
-    shadowParam={
-        lightView,
-        Model->topMatrix(),
-        lightProjection,
-        0.0,
-        shadowProg,
-        theBunny->begin(),
-        NULL,
-        NULL
-    };
-    shadow_queue->push(shadowParam);
-
-    Model->popMatrix();
-
-    //car
     // Model->pushMatrix();
-    //     Model->translate(vec3(0.0, 1.0, 0.0));
-    //     // Model->rotate(0.78, vec3(0,1,0));
-    //     Model->scale(vec3(0.7,0.7,0.7));
-    //     prog->bind();
-    //     glUniform3f(prog->getUniform("lightDir"), direction_light.x, direction_light.y, direction_light.z);
-    //     prog->unbind();
-    //     for(auto iter=car->begin(); iter!=car->end(); iter++){
-    //         DrawParam thisParam= {
+    // Model->translate(vec3(g_eye.x,terrainHeightMap.GetHeight(g_eye.x, g_eye.z-2.0)+offset_height-0.3 ,g_eye.z-2.0));
+    // thisParam= {
     //             glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
     //             Model->topMatrix(),
     //             Projection->topMatrix(),
-    //             0.1,
+    //             1.0,
     //             prog,
-    //             iter,
-    //             &(car_material->at(iter->mtlBuf[0])),
+    //             theBunny->begin(),
+    //             &(desert_material->at(0)),
     //             NULL
     //         };
-    //         render_queue->push(thisParam);
-    //         DrawParam shadowParam={
-    //             lightView,
-    //             Model->topMatrix(),
-    //             lightProjection,
-    //             0.0,
-    //             shadowProg,
-    //             iter,
-    //             NULL,
-    //             NULL
-    //         };
-    //         shadow_queue->push(shadowParam);
-    //     }
+    // render_queue->push(thisParam);
+    // shadowParam={
+    //     lightView,
+    //     Model->topMatrix(),
+    //     lightProjection,
+    //     0.0,
+    //     shadowProg,
+    //     theBunny->begin(),
+    //     NULL,
+    //     NULL
+    // };
+    // shadow_queue->push(shadowParam);
+
     // Model->popMatrix();
+
+    //car
+    Model->pushMatrix();
+        Model->translate(vec3(g_eye.x,terrainHeightMap.GetHeight(g_eye.x, g_eye.z-2.0)+offset_height+0.5 ,g_eye.z-2.0));
+        // Model->rotate(0.78, vec3(0,1,0));
+        Model->scale(vec3(0.7,0.7,0.7));
+        prog->bind();
+        glUniform3f(prog->getUniform("lightDir"), direction_light.x, direction_light.y, direction_light.z);
+        prog->unbind();
+        for(auto iter=car->begin(); iter!=car->end(); iter++){
+            DrawParam thisParam= {
+                glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
+                Model->topMatrix(),
+                Projection->topMatrix(),
+                0.1,
+                prog,
+                iter,
+                &(car_material->at(iter->mtlBuf[0])),
+                NULL
+            };
+            render_queue->push(thisParam);
+            DrawParam shadowParam={
+                lightView,
+                Model->topMatrix(),
+                lightProjection,
+                0.0,
+                shadowProg,
+                iter,
+                NULL,
+                NULL
+            };
+            shadow_queue->push(shadowParam);
+        }
+    Model->popMatrix();
 
     //render shadow map first
     glCullFace(GL_FRONT);
