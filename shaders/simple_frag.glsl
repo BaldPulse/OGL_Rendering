@@ -58,15 +58,7 @@ void main()
 	float trans_index = Alpha;
 	if(Alpha < 0.99)
 		trans_index = (trans_index + length(spec_component))/(1.0f+Alpha);
-    // if(shadow==0.0)
-    color = vec4(vec3((1.0-shadow), 0.0,0.0), 1.0);
-    // vec3 projCoords = FragPosLightSpace.xyz / FragPosLightSpace.w;
-    // projCoords = projCoords * 0.5 + 0.5;
-    // float closest = texture(shadowMap, projCoords.xy).r;
-    // if(closest>1.0)
-	//     color = vec4(vec3(1.0, 0.0,0.0), 1.0);
-    // if(closest<1.0)
-	//     color = vec4(vec3(0.0, 1.0,0.0), 1.0);
-    // if(closest==1.0)
-	//     color = vec4(vec3(0.0, 0.0,1.0), 1.0);
+    
+    // color = vec4(vec3((1.0-shadow), 0.0,0.0), 1.0);
+    color = vec4(MatAmb + (1.0-shadow)*(dif_component+spec_component)+MatEmit, trans_index);
 }
