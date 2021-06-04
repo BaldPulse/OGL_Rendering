@@ -552,3 +552,81 @@ void Application::render(float frametime) {
     Projection->popMatrix();
 
 }
+
+
+#define THEIGHT  70
+#define TWIDTH  70
+void add_vert_to_terrain(const int &x,const int &z, const float &v_x, const float &v_z, const float &v_y, float*terrain_map, float *terrain_map_density){
+    int index = (x+THEIGHT/2)*TWIDTH + (z+TWIDTH);
+    float weight = 1 / ( distance(vec2((float) x, (float) z), vec2(v_x, v_z)) + 0.01);
+    
+    terrain_map[index] += weight * v_y;
+    float prev_w = terrain_map_density[index];
+    terrain_map_density[index] += weight;
+    if(isnan(abs(terrain_map_density[index]))){
+        cout<<'\t'<<"weight is nan"<<weight<<' '<<prev_w<<endl;
+    }
+}
+
+void Application::obj_to_terrain_map(){
+    bool rc;
+    string errStr;
+    vector<tinyobj::shape_t> terrainV;
+    vector<tinyobj::material_t> terrainMaterialV;
+    // load in the mesh and make the shape(s)
+    string resourceDirectory = "../resources";
+    rc = tinyobj::LoadObj(terrainV, terrainMaterialV, errStr, 
+        (resourceDirectory + "/Desert" + "/Dune_LOD1.obj").c_str(), (resourceDirectory+"/Desert/").c_str());
+    
+
+    tinyobj::shape_t terrain = terrainV.at(0);
+    float terrain_map[THEIGHT*TWIDTH];
+    float terrain_map_density[THEIGHT*TWIDTH];
+    for(int i=0; i<THEIGHT*TWIDTH; i++){
+        terrain_map[i] = 0;
+        terrain_map_density[i] = 0;
+    }
+    for(auto iter=terrain.mesh.positions.begin(); iter!=terrain.mesh.positions.end(); iter+=3){
+        int l_x = (int)*iter;
+        int l_z = (int)*(iter+2);
+        if(l_x >= - TWIDTH/2 && l_z < TWIDTH/2){
+            add_vert_to_terrain(l_x, l_z, *iter, *(iter+2), *(iter+1), terrain_map, terrain_map_density);
+            add_vert_to_terrain(l_x+1, l_z, *iter, *(iter+2), *(iter+1), terrain_map, terrain_map_density);
+            add_vert_to_terrain(l_x, l_z+1, *iter, *(iter+2), *(iter+1), terrain_map, terrain_map_density);
+            add_vert_to_terrain(l_x+1, l_z+1, *iter, *(iter+2), *(iter+1), terrain_map, terrain_map_density);
+        }
+    }
+    ofstream terrain_map_file, terrain_map_ppm;
+    terrain_map_file.open(resourceDirectory+"/Desert/Dune_hmap.txt");
+    terrain_map_ppm.open(resourceDirectory+"/Desert/Dune_hmap.ppm");
+    terrain_map_ppm<<"P3"<<endl;
+    terrain_map_ppm<<TWIDTH<<' '<<THEIGHT<<endl;
+
+    terrain_map_file<<THEIGHT<<' '<<TWIDTH<<endl;
+    float min = 0;
+    float max = 0;
+    for(int i=0; i<THEIGHT*TWIDTH; i++){
+        float prv = terrain_map[i], prv_w = terrain_map_density[i];
+        terrain_map[i]/=terrain_map_density[i];
+        if(isnan(terrain_map[i])){
+            cout<<"nan occured "<<terrain_map[i]<<'\t'<<terrain_map_density[i]<<prv<<'\t'<<prv_w<<endl;
+        }
+        if(abs(terrain_map[i])>100){
+            cout<<"big h occured "<<terrain_map[i]<<'\t'<<prv<<'\t'<<terrain_map_density[i]<<endl;
+        }
+        if(terrain_map[i]>max)
+            max = terrain_map[i];
+        if(terrain_map[i]<min)
+            min = terrain_map[i];
+        terrain_map_file<<terrain_map[i]<<endl;
+    }
+    cout<<min<<' '<<max<<endl;
+    terrain_map_ppm<<(int) (max-min+1)<<endl;
+    for(int i=0; i<TWIDTH; i++){
+        for(int j=0; j<THEIGHT; j++){
+            int h_val = (int) (terrain_map[i*TWIDTH + j] - min);
+            terrain_map_ppm<<h_val<<' '<<h_val<<' '<<h_val<<'\t';
+        }
+        terrain_map_ppm<<endl;
+    }
+}

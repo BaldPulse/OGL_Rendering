@@ -6,10 +6,12 @@
 #define APPLICATION_H
 
 #include <iostream>
+#include <fstream>
 #include <glad/glad.h>
 #include <chrono> 
 #include <algorithm>
 #include <queue>
+#include <math.h>
 
 #include "GLSL.h"
 #include "Program.h"
@@ -147,6 +149,8 @@ public:
     void renderQueue(std::shared_ptr<std::queue<DrawParam>> renderQueue);
 
 	void render(float frametime);
+
+	void obj_to_terrain_map();
 };
 
 
