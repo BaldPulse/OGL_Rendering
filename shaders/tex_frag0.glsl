@@ -82,7 +82,8 @@ void main() {
 	float shadow = ShadowCalculation(FragPosLightSpace);
 	vec3 dif = VecDif*max(0.0, dot(normal, light));
 	vec3 shine = VecSpec*pow(max(dot(half_v, normal), 0.0), MatShine);
-	vec3 color = VecAmb +(dif+shine)+ MatEmit;
+	vec3 color = VecAmb +(1.0-shadow)*(dif+shine)+ MatEmit;
 	
-	Outcolor = vec4(vec3((1.0-shadow), 0.0, 0.0), 1.0);
+	// Outcolor = vec4(vec3((1.0-shadow), 0.0, 0.0), 1.0);
+	Outcolor = vec4(color, 1.0);
 }

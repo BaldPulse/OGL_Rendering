@@ -100,7 +100,7 @@ void load_texture(std::shared_ptr<TexMap> texMap, std::string texDir, tinyobj::m
         texMap->map_ka = new Texture();
         texMap->map_ka->setFilename((texDir+material.ambient_texname).c_str());
         texMap->map_ka->init();
-        texMap->map_ka->setUnit(0);
+        texMap->map_ka->setUnit(1);
         texMap->map_ka->setWrapModes(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
     }
     else
@@ -110,7 +110,7 @@ void load_texture(std::shared_ptr<TexMap> texMap, std::string texDir, tinyobj::m
         texMap->map_ks = new Texture();
         texMap->map_ks->setFilename((texDir+material.ambient_texname).c_str());
         texMap->map_ks->init();
-        texMap->map_ks->setUnit(0);
+        texMap->map_ks->setUnit(2);
         texMap->map_ks->setWrapModes(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
     }
     else

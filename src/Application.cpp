@@ -436,17 +436,15 @@ void Application::render(float frametime) {
     //     Model->popMatrix();
     // cubeProg->unbind();
     
-    
-    vec3 direction_light = vec3(-1.0, -0.5, 0.0); //uniform directional light (sun/moon light)
+    vec3 light_eye = vec3(3, 1, 0.0);
+    vec3 light_lookat = vec3(0.0,0.0,0.0);
+    vec3 direction_light = light_lookat-light_eye; //uniform directional light (sun/moon light)
     mat4 lightProjection = ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 15.0f);
-    // mat4 lightView = glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0));
     mat4 lightView = lookAt(
-                        vec3(3, 0.5, 0.0),
-                        vec3(0.0,0.0,0.0),
+                        light_eye,
+                        light_lookat,
                         vec3(0.0, 1.0, 0.0)
                         );
-    cout<<g_eye.x<<' '<<g_eye.y<<' '<<g_eye.z<<endl;
-    cout<<(g_lookAt-g_eye).x<<' '<<(g_lookAt-g_eye).y<<' '<<(g_lookAt-g_eye).z<<endl;
     prog->bind();
         glUniform3f(prog->getUniform("lightDir"), direction_light.x, direction_light.y, direction_light.z);
     prog->unbind();
@@ -470,8 +468,8 @@ void Application::render(float frametime) {
                 texProg,
                 desert->begin(),
                 &(desert_material->at(0)),
-                NULL
-                // desert_texture
+                // NULL
+                desert_texture
             };
     render_queue->push(thisParam);
     shadowParam={
@@ -580,17 +578,13 @@ void Application::render(float frametime) {
     glViewport(0, 0, width, height);
     prog->bind();
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    bind_depthMap_to_shadowMap(prog, depthMap, 0);
+    bind_depthMap_to_shadowMap(prog, depthMap, 4);
     mat4 lightSpaceMatrix = lightProjection * lightView;
     glUniformMatrix4fv(prog->getUniform("lightSpaceMatrix"), 1, GL_FALSE, value_ptr(lightSpaceMatrix));
     prog->unbind();
 
     texProg->bind();
-    glActiveTexture(GL_TEXTURE0 + 1);
-    glBindTexture(GL_TEXTURE_2D, depthMap);
-    glUniform1i(texProg->getUniform("map_kd"), 1);
-    // desert_texture->map_kd->bind(texProg->getUniform("map_kd"));
-    glUniform1i(texProg->getUniform("use_map_kd"), 1);
+    bind_depthMap_to_shadowMap(texProg, depthMap, 5);
     glUniformMatrix4fv(texProg->getUniform("lightSpaceMatrix"), 1, GL_FALSE, value_ptr(lightSpaceMatrix));
     glUniform3f(texProg->getUniform("MatDif"), 1.0,1.0,1.0);
     texProg->unbind();
