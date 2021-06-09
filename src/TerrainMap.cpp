@@ -45,7 +45,7 @@ void average_surrounding(float*terrain_map, int i, int j){
     // if(count<1.0)
     //     cout<<"count "<<count<<endl;
     // if(sum>100.0)
-        cout<<"sum1 "<<sum<<endl;
+        // cout<<"sum1 "<<sum<<endl;
     terrain_map[i*TWIDTH*TTEX+j] = (sum/count);
 }
 
@@ -113,9 +113,9 @@ void obj_to_terrain_map(){
                     terrain_map_set[i*TWIDTH*TTEX + j]==0;
                 }
                 if(terrain_map_set[i*TWIDTH*TTEX + j]==0){
-                    cout<<i<<' '<<j<<endl;
+                    // cout<<i<<' '<<j<<endl;
                     average_surrounding(terrain_map, i, j);
-                    cout<<"after average"<<terrain_map[i*TWIDTH*TTEX + j]<<endl;
+                    // cout<<"after average"<<terrain_map[i*TWIDTH*TTEX + j]<<endl;
                 }
             }
         }

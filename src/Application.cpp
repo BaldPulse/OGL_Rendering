@@ -387,7 +387,7 @@ void Application::init(const std::string& resourceDirectory)
 
     terrainHeightMap = new TerrainHeightMap;
     terrainHeightMap->LoadHeightMap("../resources/Desert/Dune_hmap.txt");
-    carDrive = make_shared<Drive>(vec2(1.0, 0.0), vec3(0.0, 0.0, 0.0), terrainHeightMap);
+    carDrive = make_shared<Drive>(vec2(1.0,0.0), vec3(0.0, 0.0, 0.0), terrainHeightMap);
 }
 
 void Application::initGeom(const std::string& resourceDirectory)
@@ -550,6 +550,7 @@ void Application::updateView(){
         sign = -1.0f;
     }
     look_dir=normalize(vec3(2.0*cos(g_phi)*cos(g_theta), 2.0*sin(g_phi), 2.0*cos(g_phi)*cos((glm::pi<double>()/2)-g_theta)));
+    // cout<<"look dir"<<glm::to_string(look_dir)<<endl;
     g_lookAt = g_eye + look_dir;
     if(mv_forward && !mv_back)
         g_eye += 0.02f * look_dir;
@@ -661,8 +662,8 @@ void Application::render(float frametime) {
     DrawParam thisParam;
     DrawParam shadowParam;
     
-    Model->pushMatrix();
     Model->translate(vec3(0,9.0,0.0));
+    Model->pushMatrix();
     // Model->scale(vec3(0.1,0.1,0.1));
     thisParam= {
                 glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
@@ -687,41 +688,17 @@ void Application::render(float frametime) {
     };
     shadow_queue->push(shadowParam);
 
-    // Model->popMatrix();
+    Model->popMatrix();
 
-    float offset_height = 9.0;
-    // Model->pushMatrix();
-    // Model->translate(vec3(g_eye.x,terrainHeightMap.GetHeight(g_eye.x, g_eye.z-2.0)+offset_height-0.3 ,g_eye.z-2.0));
-    // thisParam= {
-    //             glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
-    //             Model->topMatrix(),
-    //             Projection->topMatrix(),
-    //             1.0,
-    //             prog,
-    //             theBunny->begin(),
-    //             &(desert_material->at(0)),
-    //             NULL
-    //         };
-    // render_queue->push(thisParam);
-    // shadowParam={
-    //     lightView,
-    //     Model->topMatrix(),
-    //     lightProjection,
-    //     0.0,
-    //     shadowProg,
-    //     theBunny->begin(),
-    //     NULL,
-    //     NULL
-    // };
-    // shadow_queue->push(shadowParam);
-
-    // Model->popMatrix();
+    float offset_height = 0.8;
 
     //car
     Model->pushMatrix();
         // Model->translate(vec3(g_eye.x,terrainHeightMap.GetHeight(g_eye.x, g_eye.z-2.0)+offset_height+0.5 ,g_eye.z-2.0));
         // Model->translate(vec3(0.0,terrainHeightMap->GetHeight(0.0, 0.0-2.0)+1.0 ,0.0-2.0));
+        carDrive->set(vec2(1.0, 0.0), vec3(g_eye.x, g_eye.y, g_eye.z-2.0));
         carDrive->createModelMatrix(Model);
+        Model->translate(vec3(0.0, offset_height, 0.0));
         // Model->rotate(0.78, vec3(0,1,0));
         // Model->scale(vec3(0.7,0.7,0.7));
         Model->pushMatrix();

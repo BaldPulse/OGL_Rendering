@@ -10,6 +10,8 @@
 #include <math.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "glm/gtx/string_cast.hpp"
+
 
 #include "TerrainMap.h"
 #include "MatrixStack.h"
@@ -22,6 +24,7 @@ public:
     void update();
     void findOrientation();
     void createModelMatrix(std::shared_ptr<MatrixStack> Model);
+    void set(glm::vec2 dir, glm::vec3 loc);
     
 private:
     //ground beneath the car
