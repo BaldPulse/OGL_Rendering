@@ -122,6 +122,9 @@ public:
 	const float rbMovex = 0.74;
 	const float rbMovey = 0.525;
 	const float rbMovez = 1.355;
+	const float lbMovex = -0.74;
+	const float lbMovey = 0.525;
+	const float lbMovez = 1.355;
 
 	Spline splinepath[2];
 	bool goCamera = false;

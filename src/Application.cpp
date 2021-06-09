@@ -142,29 +142,43 @@ void Application::car_to_obj(std::shared_ptr<std::vector<Shape>> car,
                                 "Plane.074_003-0-3.001_cromo.002",
                                 "Plane.024_001-0-1.001_cromo_2.003",
                                 "Plane.028_001-0-1-2_001-0-1.001_black_osfu.003"};
+    vector<string> lb_names = { "Plane.125_091-0-91.003_black_of",
+                                "Plane.131_012-0-12.003_black_bri.001",
+                                "Plane.132_003-0-3.003_cromo.002",
+                                "Plane.133_001-0-1.003_cromo_2.003",
+                                "Plane.135_001-0-1-2_001-0-1.003_black_osfu.003"};
     cout<<"shape size "<<shapes.size()<<endl;
     for(int i=0; i<shapes.size(); i++){
         string name = shapes[i].name;
         auto iter = find(rb_names.begin(), rb_names.end(), name);
-        if(iter == rb_names.end()){
-            car->push_back(Shape());
-            car->back().createShape(shapes[i]);
-            car->back().measure();
-            car->back().init();
-        }
-        else{
+        if(iter != rb_names.end()){
             rb_wheel->push_back(Shape());
             rb_wheel->back().createShape(shapes[i]);
             rb_wheel->back().measure();
             rb_wheel->back().init();
+            continue;
         }
+        iter = find(lb_names.begin(), lb_names.end(), name);
+        if(iter != lb_names.end()){
+            lb_wheel->push_back(Shape());
+            lb_wheel->back().createShape(shapes[i]);
+            lb_wheel->back().measure();
+            lb_wheel->back().init();
+            continue;
+        }
+
+        car->push_back(Shape());
+        car->back().createShape(shapes[i]);
+        car->back().measure();
+        car->back().init();
     }
 }
 
 void Application::draw_wheels(std::shared_ptr<MatrixStack> Model, std::shared_ptr<MatrixStack> Projection){
-    Model->translate(vec3(0.0-rbMovex,0.0-testMovey,0.0-testMovez));
+    Model->pushMatrix();
+    Model->translate(vec3(0.0-rbMovex,0.0-rbMovey,0.0-rbMovez));
     Model->rotate(renderTime, vec3(1.0, 0.0, 0.0));
-    Model->translate(vec3(0.0+rbMovex,0.0+testMovey,0.0+testMovez));
+    Model->translate(vec3(0.0+rbMovex,0.0+rbMovey,0.0+rbMovez));
     // Model->scale(vec3(0.1,0.1,0.1));
     for(auto iter=rb_wheel->begin(); iter!=rb_wheel->end(); iter++){
         DrawParam thisParam= {
@@ -179,7 +193,27 @@ void Application::draw_wheels(std::shared_ptr<MatrixStack> Model, std::shared_pt
         };
         render_queue->push(thisParam);
     }
-
+    Model->popMatrix();
+    
+    Model->pushMatrix();
+    Model->translate(vec3(0.0-lbMovex,0.0-lbMovey,0.0-lbMovez));
+    Model->rotate(renderTime, vec3(1.0, 0.0, 0.0));
+    Model->translate(vec3(0.0+lbMovex,0.0+lbMovey,0.0+lbMovez));
+    // Model->scale(vec3(0.1,0.1,0.1));
+    for(auto iter=lb_wheel->begin(); iter!=lb_wheel->end(); iter++){
+        DrawParam thisParam= {
+            glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
+            Model->topMatrix(),
+            Projection->topMatrix(),
+            0.1,
+            prog,
+            iter,
+            &(car_material->at(iter->mtlBuf[0])),
+            NULL
+        };
+        render_queue->push(thisParam);
+    }
+    Model->popMatrix();
 }
 
 unsigned int Application::createSky(string dir, vector<string> faces) {
@@ -609,11 +643,11 @@ void Application::render(float frametime) {
             shadow_queue->push(shadowParam);
         }
 
-        Model->pushMatrix();
         
+        Model->pushMatrix();
         draw_wheels(Model, Projection);
-
         Model->popMatrix();
+        
         
     Model->popMatrix();
 
