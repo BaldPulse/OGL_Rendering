@@ -17,10 +17,16 @@ void Application::keyCallback(GLFWwindow *window, int key, int scancode, int act
         glfwSetWindowShouldClose(window, GL_TRUE);
     }
     if (key == GLFW_KEY_Q && action == GLFW_PRESS){
-        lightTrans += 0.5;
+        testMovez += 0.005;
     }
     if (key == GLFW_KEY_E && action == GLFW_PRESS){
-        lightTrans -= 0.5;
+        testMovez -= 0.005;
+    }
+    if (key == GLFW_KEY_T && action == GLFW_PRESS){
+        testMovey += 0.005;
+    }
+    if (key == GLFW_KEY_R && action == GLFW_PRESS){
+        testMovey -= 0.005;
     }
     if (key == GLFW_KEY_Z && action == GLFW_PRESS) {
         glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
@@ -124,6 +130,58 @@ void Application::write_to_obj(shared_ptr<vector<Shape>> mesh, vector<tinyobj::s
         }
 }
 
+void Application::car_to_obj(std::shared_ptr<std::vector<Shape>> car,
+		std::shared_ptr<std::vector<Shape>> lf_wheel,
+		std::shared_ptr<std::vector<Shape>> rf_wheel,
+		std::shared_ptr<std::vector<Shape>> lb_wheel,
+		std::shared_ptr<std::vector<Shape>> rb_wheel,
+		std::vector<tinyobj::shape_t>& shapes){
+
+    vector<string> rb_names = { "Plane.097_091-0-91.001_black_of",
+                                "Plane.079_012-0-12.001_black_bri.001",
+                                "Plane.074_003-0-3.001_cromo.002",
+                                "Plane.024_001-0-1.001_cromo_2.003",
+                                "Plane.028_001-0-1-2_001-0-1.001_black_osfu.003"};
+    cout<<"shape size "<<shapes.size()<<endl;
+    for(int i=0; i<shapes.size(); i++){
+        string name = shapes[i].name;
+        auto iter = find(rb_names.begin(), rb_names.end(), name);
+        if(iter == rb_names.end()){
+            car->push_back(Shape());
+            car->back().createShape(shapes[i]);
+            car->back().measure();
+            car->back().init();
+        }
+        else{
+            rb_wheel->push_back(Shape());
+            rb_wheel->back().createShape(shapes[i]);
+            rb_wheel->back().measure();
+            rb_wheel->back().init();
+        }
+    }
+}
+
+void Application::draw_wheels(std::shared_ptr<MatrixStack> Model, std::shared_ptr<MatrixStack> Projection){
+    Model->translate(vec3(0.0-rbMovex,0.0-testMovey,0.0-testMovez));
+    Model->rotate(renderTime, vec3(1.0, 0.0, 0.0));
+    Model->translate(vec3(0.0+rbMovex,0.0+testMovey,0.0+testMovez));
+    // Model->scale(vec3(0.1,0.1,0.1));
+    for(auto iter=rb_wheel->begin(); iter!=rb_wheel->end(); iter++){
+        DrawParam thisParam= {
+            glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
+            Model->topMatrix(),
+            Projection->topMatrix(),
+            0.1,
+            prog,
+            iter,
+            &(car_material->at(iter->mtlBuf[0])),
+            NULL
+        };
+        render_queue->push(thisParam);
+    }
+
+}
+
 unsigned int Application::createSky(string dir, vector<string> faces) {
     unsigned int textureID;
     glGenTextures(1, &textureID);
@@ -221,7 +279,11 @@ void Application::initGeom(const std::string& resourceDirectory)
         cerr << errStr << endl;
     } else {
         car = make_shared<vector<Shape>>();
-        write_to_obj(car, TOshapesC);
+        lf_wheel = make_shared<vector<Shape>>();
+        rf_wheel = make_shared<vector<Shape>>();
+        lb_wheel = make_shared<vector<Shape>>();
+        rb_wheel = make_shared<vector<Shape>>();
+        car_to_obj(car, lf_wheel, rf_wheel, lb_wheel, rb_wheel, TOshapesC);
     }
     cout<<"car mat size "<<car_material->size()<<endl;
     //To ensure transparency works with z-buffer testing, sort obj vector in terms of alpha value
@@ -274,7 +336,6 @@ void Application::initGeom(const std::string& resourceDirectory)
             write_to_obj(theCube, TOshapesE);
 		}
 }
-
 
 //helper function to pass material data to the GPU
 void SetMaterial(shared_ptr<Program> curS, const tinyobj::material_t &material, float ka) {
@@ -407,6 +468,7 @@ void Application::render(float frametime) {
     auto Projection = make_shared<MatrixStack>();
     auto View = make_shared<MatrixStack>();
     auto Model = make_shared<MatrixStack>();
+    
 
     //update the camera position
     updateUsingCameraPath(frametime);
@@ -457,33 +519,33 @@ void Application::render(float frametime) {
     DrawParam thisParam;
     DrawParam shadowParam;
     
-    Model->pushMatrix();
-    Model->translate(vec3(0,9.0,0.0));
-    // Model->scale(vec3(0.1,0.1,0.1));
-    thisParam= {
-                glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
-                Model->topMatrix(),
-                Projection->topMatrix(),
-                1.0,
-                texProg,
-                desert->begin(),
-                &(desert_material->at(0)),
-                desert_texture
-            };
-    render_queue->push(thisParam);
-    shadowParam={
-        lightView,
-        Model->topMatrix(),
-        lightProjection,
-        0.0,
-        shadowProg,
-        desert->begin(),
-        NULL,
-        NULL
-    };
-    shadow_queue->push(shadowParam);
+    // Model->pushMatrix();
+    // Model->translate(vec3(0,9.0,0.0));
+    // // Model->scale(vec3(0.1,0.1,0.1));
+    // thisParam= {
+    //             glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
+    //             Model->topMatrix(),
+    //             Projection->topMatrix(),
+    //             1.0,
+    //             texProg,
+    //             desert->begin(),
+    //             &(desert_material->at(0)),
+    //             desert_texture
+    //         };
+    // render_queue->push(thisParam);
+    // shadowParam={
+    //     lightView,
+    //     Model->topMatrix(),
+    //     lightProjection,
+    //     0.0,
+    //     shadowProg,
+    //     desert->begin(),
+    //     NULL,
+    //     NULL
+    // };
+    // shadow_queue->push(shadowParam);
 
-    Model->popMatrix();
+    // Model->popMatrix();
 
     float offset_height = 9.0;
     // Model->pushMatrix();
@@ -515,7 +577,8 @@ void Application::render(float frametime) {
 
     //car
     Model->pushMatrix();
-        Model->translate(vec3(g_eye.x,terrainHeightMap.GetHeight(g_eye.x, g_eye.z-2.0)+offset_height+0.5 ,g_eye.z-2.0));
+        // Model->translate(vec3(g_eye.x,terrainHeightMap.GetHeight(g_eye.x, g_eye.z-2.0)+offset_height+0.5 ,g_eye.z-2.0));
+        Model->translate(vec3(0.0,terrainHeightMap.GetHeight(0.0, 0.0-2.0)+offset_height+0.5 ,0.0-2.0));
         // Model->rotate(0.78, vec3(0,1,0));
         Model->scale(vec3(0.7,0.7,0.7));
         prog->bind();
@@ -545,7 +608,18 @@ void Application::render(float frametime) {
             };
             shadow_queue->push(shadowParam);
         }
+
+        Model->pushMatrix();
+        
+        draw_wheels(Model, Projection);
+
+        Model->popMatrix();
+        
     Model->popMatrix();
+
+
+    
+
 
     //render shadow map first
     glCullFace(GL_FRONT);
@@ -572,11 +646,12 @@ void Application::render(float frametime) {
     texProg->unbind();
     renderQueue(render_queue);
 
-    cout<<g_eye.x<<' '<< g_eye.z<<' '<<terrainHeightMap.GetHeight(g_eye.x, g_eye.z)+offset_height<<endl;;
-
+    // cout<<g_eye.x<<' '<< g_eye.z<<' '<<terrainHeightMap.GetHeight(g_eye.x, g_eye.z)+offset_height<<endl;
+    cout<<testMovex<<"\t"<<testMovey<<"\t"<<testMovez<<endl;
     Model->popMatrix();
     // Pop matrix stacks.
     Projection->popMatrix();
+    renderTime += frametime;
 
 }
 

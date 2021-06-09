@@ -56,6 +56,11 @@ public:
 	//our geometry
 	std::shared_ptr<Shape> cube;
 	std::shared_ptr<std::vector<Shape>> car;
+	std::shared_ptr<std::vector<Shape>> lf_wheel;
+	std::shared_ptr<std::vector<Shape>> rf_wheel;
+	std::shared_ptr<std::vector<Shape>> lb_wheel;
+	std::shared_ptr<std::vector<Shape>> rb_wheel;
+
 	std::shared_ptr<std::vector<Shape>> theBunny;
 	std::shared_ptr<std::vector<Shape>> theCube;
 	std::shared_ptr<std::vector<tinyobj::material_t>> car_material;
@@ -110,6 +115,14 @@ public:
 	glm::vec3 look_dir;
 	glm::vec3 g_usereye = g_eye;
 
+	float renderTime = 0.0;
+	float testMovex = 0.74;
+	float testMovey = 0.53;
+	float testMovez = 1.36;
+	const float rbMovex = 0.74;
+	const float rbMovey = 0.525;
+	const float rbMovez = 1.355;
+
 	Spline splinepath[2];
 	bool goCamera = false;
 
@@ -124,6 +137,15 @@ public:
 	void resizeCallback(GLFWwindow *window, int width, int height);
 
 	void write_to_obj(std::shared_ptr<std::vector<Shape>> mesh, std::vector<tinyobj::shape_t>& shapes);
+
+	void car_to_obj(std::shared_ptr<std::vector<Shape>> car,
+		std::shared_ptr<std::vector<Shape>> lf_wheel,
+		std::shared_ptr<std::vector<Shape>> rf_wheel,
+		std::shared_ptr<std::vector<Shape>> lb_wheel,
+		std::shared_ptr<std::vector<Shape>> rb_wheel,
+		std::vector<tinyobj::shape_t>& shapes);
+
+	void draw_wheels(std::shared_ptr<MatrixStack> Model, std::shared_ptr<MatrixStack> Projection);
 
 	unsigned int createSky(std::string dir, std::vector<std::string> faces);
 
