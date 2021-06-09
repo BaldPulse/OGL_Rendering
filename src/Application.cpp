@@ -385,7 +385,9 @@ void Application::init(const std::string& resourceDirectory)
     depthMap = create_depthMap(1024, 1024);
     depthMapFBO = bind_depthMap_to_framebuffer(depthMap);
 
-    terrainHeightMap.LoadHeightMap("../resources/Desert/Dune_hmap.txt");
+    terrainHeightMap = new TerrainHeightMap;
+    terrainHeightMap->LoadHeightMap("../resources/Desert/Dune_hmap.txt");
+    carDrive = make_shared<Drive>(vec2(1.0, 0.0), vec3(0.0, 0.0, 0.0), terrainHeightMap);
 }
 
 void Application::initGeom(const std::string& resourceDirectory)
@@ -659,31 +661,31 @@ void Application::render(float frametime) {
     DrawParam thisParam;
     DrawParam shadowParam;
     
-    // Model->pushMatrix();
-    // Model->translate(vec3(0,9.0,0.0));
-    // // Model->scale(vec3(0.1,0.1,0.1));
-    // thisParam= {
-    //             glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
-    //             Model->topMatrix(),
-    //             Projection->topMatrix(),
-    //             1.0,
-    //             texProg,
-    //             desert->begin(),
-    //             &(desert_material->at(0)),
-    //             desert_texture
-    //         };
-    // render_queue->push(thisParam);
-    // shadowParam={
-    //     lightView,
-    //     Model->topMatrix(),
-    //     lightProjection,
-    //     0.0,
-    //     shadowProg,
-    //     desert->begin(),
-    //     NULL,
-    //     NULL
-    // };
-    // shadow_queue->push(shadowParam);
+    Model->pushMatrix();
+    Model->translate(vec3(0,9.0,0.0));
+    // Model->scale(vec3(0.1,0.1,0.1));
+    thisParam= {
+                glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
+                Model->topMatrix(),
+                Projection->topMatrix(),
+                1.0,
+                texProg,
+                desert->begin(),
+                &(desert_material->at(0)),
+                desert_texture
+            };
+    render_queue->push(thisParam);
+    shadowParam={
+        lightView,
+        Model->topMatrix(),
+        lightProjection,
+        0.0,
+        shadowProg,
+        desert->begin(),
+        NULL,
+        NULL
+    };
+    shadow_queue->push(shadowParam);
 
     // Model->popMatrix();
 
@@ -718,9 +720,11 @@ void Application::render(float frametime) {
     //car
     Model->pushMatrix();
         // Model->translate(vec3(g_eye.x,terrainHeightMap.GetHeight(g_eye.x, g_eye.z-2.0)+offset_height+0.5 ,g_eye.z-2.0));
-        Model->translate(vec3(0.0,terrainHeightMap.GetHeight(0.0, 0.0-2.0)+offset_height+0.5 ,0.0-2.0));
+        // Model->translate(vec3(0.0,terrainHeightMap->GetHeight(0.0, 0.0-2.0)+1.0 ,0.0-2.0));
+        carDrive->createModelMatrix(Model);
         // Model->rotate(0.78, vec3(0,1,0));
-        Model->scale(vec3(0.7,0.7,0.7));
+        // Model->scale(vec3(0.7,0.7,0.7));
+        Model->pushMatrix();
         prog->bind();
         glUniform3f(prog->getUniform("lightDir"), direction_light.x, direction_light.y, direction_light.z);
         prog->unbind();
@@ -748,10 +752,9 @@ void Application::render(float frametime) {
             };
             shadow_queue->push(shadowParam);
         }
-
-        
         
         draw_wheels(Model, Projection);
+        Model->popMatrix();
         
         
         

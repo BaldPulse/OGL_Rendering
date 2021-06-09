@@ -11,11 +11,17 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "TerrainMap.h"
+#include "MatrixStack.h"
+
 class Drive
 {
 public:
+    Drive(glm::vec2 dir, glm::vec3 loc, TerrainHeightMap* tMap);
+
     void update();
     void findOrientation();
+    void createModelMatrix(std::shared_ptr<MatrixStack> Model);
     
 private:
     //ground beneath the car
@@ -33,12 +39,12 @@ private:
     glm::vec3 location;
 
     //relative location of the wheels with respect to the car
-    const glm::vec2 lf = vec2(0.0, 0.0);
-    const glm::vec2 rf = vec2(0.0, 0.0);
-    const glm::vec2 lb = vec2(0.0, 0.0);
-    const glm::vec2 rb = vec2(0.0, 0.0);
+    const glm::vec3 lf = glm::vec3(0.74, 0.520, 1.65);
+    const glm::vec3 rf = glm::vec3(-0.74, 0.520, 1.65);
+    const glm::vec3 lb = glm::vec3(0.74, 0.525, -1.355);
+    const glm::vec3 rb = glm::vec3(-0.74, 0.525, -1.355);
 
-
+    TerrainHeightMap* terrainHeightMap;
 };
 
 

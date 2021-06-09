@@ -24,6 +24,7 @@
 #include "Spline.h"
 #include "Application_Helpers.h"
 #include "TerrainMap.h"
+#include "Drive.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader/tiny_obj_loader.h>
@@ -51,7 +52,7 @@ public:
 	//Shader for shadow mapping
 	std::shared_ptr<Program> shadowProg;
 
-	TerrainHeightMap terrainHeightMap;
+	TerrainHeightMap* terrainHeightMap;
 
 	//our geometry
 	std::shared_ptr<Shape> cube;
@@ -67,7 +68,7 @@ public:
 	std::shared_ptr<std::vector<Shape>> desert;
 	std::shared_ptr<std::vector<tinyobj::material_t>> desert_material;
 
-
+	std::shared_ptr<Drive> carDrive;
 
 	struct alpha_compare{
 		std::shared_ptr<std::vector<tinyobj::material_t>> material_list;
