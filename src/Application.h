@@ -115,16 +115,27 @@ public:
 	glm::vec3 look_dir;
 	glm::vec3 g_usereye = g_eye;
 
+	glm::mat4 lightView;
+	glm::mat4 lightProjection;
+	glm::vec3 direction_light;
+
 	float renderTime = 0.0;
-	float testMovex = 0.74;
+	float testMovex = -0.74;
 	float testMovey = 0.53;
-	float testMovez = 1.36;
+	float testMovez = -1.64;
 	const float rbMovex = 0.74;
 	const float rbMovey = 0.525;
 	const float rbMovez = 1.355;
 	const float lbMovex = -0.74;
 	const float lbMovey = 0.525;
 	const float lbMovez = 1.355;
+	
+	const float rfMovex = 0.74;
+	const float rfMovey = 0.520;
+	const float rfMovez = -1.65;
+	const float lfMovex = -0.74;
+	const float lfMovey = 0.520;
+	const float lfMovez = -1.65;
 
 	Spline splinepath[2];
 	bool goCamera = false;

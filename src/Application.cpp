@@ -147,6 +147,16 @@ void Application::car_to_obj(std::shared_ptr<std::vector<Shape>> car,
                                 "Plane.132_003-0-3.003_cromo.002",
                                 "Plane.133_001-0-1.003_cromo_2.003",
                                 "Plane.135_001-0-1-2_001-0-1.003_black_osfu.003"};
+    vector<string> rf_names = { "Plane.096_091-0-91_black_of",
+                                "Plane.081_045-0-45_cromo.002",
+                                "Plane.078_012-0-12_black_bri",
+                                "Plane.023_001-0-1_cromo_2.003",
+                                "Plane.121_001-0-1-2_001-0-1.005_black_osfu.003"};
+    vector<string> lf_names = { "Plane.117_091-0-91.002_black_of",
+                                "Plane.122_012-0-12.002_black_bri.001",
+                                "Plane.123_003-0-3.002_cromo.002",
+                                "Plane.124_001-0-1.002_cromo_2.003",
+                                "Plane.134_001-0-1-2_001-0-1.002_black_osfu.003"};
     cout<<"shape size "<<shapes.size()<<endl;
     for(int i=0; i<shapes.size(); i++){
         string name = shapes[i].name;
@@ -166,6 +176,22 @@ void Application::car_to_obj(std::shared_ptr<std::vector<Shape>> car,
             lb_wheel->back().init();
             continue;
         }
+        iter = find(rf_names.begin(), rf_names.end(), name);
+        if(iter != rf_names.end()){
+            rf_wheel->push_back(Shape());
+            rf_wheel->back().createShape(shapes[i]);
+            rf_wheel->back().measure();
+            rf_wheel->back().init();
+            continue;
+        }
+        iter = find(lf_names.begin(), lf_names.end(), name);
+        if(iter != lf_names.end()){
+            lf_wheel->push_back(Shape());
+            lf_wheel->back().createShape(shapes[i]);
+            lf_wheel->back().measure();
+            lf_wheel->back().init();
+            continue;
+        }
 
         car->push_back(Shape());
         car->back().createShape(shapes[i]);
@@ -179,7 +205,6 @@ void Application::draw_wheels(std::shared_ptr<MatrixStack> Model, std::shared_pt
     Model->translate(vec3(0.0-rbMovex,0.0-rbMovey,0.0-rbMovez));
     Model->rotate(renderTime, vec3(1.0, 0.0, 0.0));
     Model->translate(vec3(0.0+rbMovex,0.0+rbMovey,0.0+rbMovez));
-    // Model->scale(vec3(0.1,0.1,0.1));
     for(auto iter=rb_wheel->begin(); iter!=rb_wheel->end(); iter++){
         DrawParam thisParam= {
             glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
@@ -192,6 +217,17 @@ void Application::draw_wheels(std::shared_ptr<MatrixStack> Model, std::shared_pt
             NULL
         };
         render_queue->push(thisParam);
+        DrawParam shadowParam={
+                lightView,
+                Model->topMatrix(),
+                lightProjection,
+                0.0,
+                shadowProg,
+                iter,
+                NULL,
+                NULL
+            };
+        shadow_queue->push(shadowParam);
     }
     Model->popMatrix();
     
@@ -199,7 +235,6 @@ void Application::draw_wheels(std::shared_ptr<MatrixStack> Model, std::shared_pt
     Model->translate(vec3(0.0-lbMovex,0.0-lbMovey,0.0-lbMovez));
     Model->rotate(renderTime, vec3(1.0, 0.0, 0.0));
     Model->translate(vec3(0.0+lbMovex,0.0+lbMovey,0.0+lbMovez));
-    // Model->scale(vec3(0.1,0.1,0.1));
     for(auto iter=lb_wheel->begin(); iter!=lb_wheel->end(); iter++){
         DrawParam thisParam= {
             glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
@@ -212,6 +247,77 @@ void Application::draw_wheels(std::shared_ptr<MatrixStack> Model, std::shared_pt
             NULL
         };
         render_queue->push(thisParam);
+        DrawParam shadowParam={
+                lightView,
+                Model->topMatrix(),
+                lightProjection,
+                0.0,
+                shadowProg,
+                iter,
+                NULL,
+                NULL
+            };
+        shadow_queue->push(shadowParam);
+    }
+    Model->popMatrix();
+
+    Model->pushMatrix();
+    Model->translate(vec3(0.0-rfMovex,0.0-rfMovey,0.0-rfMovez));
+    Model->rotate(renderTime, vec3(1.0, 0.0, 0.0));
+    Model->translate(vec3(0.0+rfMovex,0.0+rfMovey,0.0+rfMovez));
+    for(auto iter=rf_wheel->begin(); iter!=rf_wheel->end(); iter++){
+        DrawParam thisParam= {
+            glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
+            Model->topMatrix(),
+            Projection->topMatrix(),
+            0.1,
+            prog,
+            iter,
+            &(car_material->at(iter->mtlBuf[0])),
+            NULL
+        };
+        render_queue->push(thisParam);
+        DrawParam shadowParam={
+                lightView,
+                Model->topMatrix(),
+                lightProjection,
+                0.0,
+                shadowProg,
+                iter,
+                NULL,
+                NULL
+            };
+        shadow_queue->push(shadowParam);
+    }
+    Model->popMatrix();
+
+    Model->pushMatrix();
+    Model->translate(vec3(0.0-lfMovex,0.0-lfMovey,0.0-lfMovez));
+    Model->rotate(renderTime, vec3(1.0, 0.0, 0.0));
+    Model->translate(vec3(0.0+lfMovex,0.0+lfMovey,0.0+lfMovez));
+    for(auto iter=lf_wheel->begin(); iter!=lf_wheel->end(); iter++){
+        DrawParam thisParam= {
+            glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
+            Model->topMatrix(),
+            Projection->topMatrix(),
+            0.1,
+            prog,
+            iter,
+            &(car_material->at(iter->mtlBuf[0])),
+            NULL
+        };
+        render_queue->push(thisParam);
+        DrawParam shadowParam={
+                lightView,
+                Model->topMatrix(),
+                lightProjection,
+                0.0,
+                shadowProg,
+                iter,
+                NULL,
+                NULL
+            };
+        shadow_queue->push(shadowParam);
     }
     Model->popMatrix();
 }
@@ -534,13 +640,13 @@ void Application::render(float frametime) {
     
     vec3 light_eye = vec3(g_eye.x-3.0, 5, g_eye.y-10.0);
     vec3 light_lookat = vec3(g_eye.x,0.0,g_eye.y);
-    vec3 direction_light = light_lookat-light_eye; //uniform directional light (sun/moon light)
-    mat4 lightProjection = ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 15.0f);
-    mat4 lightView = lookAt(
-                        light_eye,
-                        light_lookat,
-                        vec3(0.0, 1.0, 0.0)
-                        );
+    direction_light = light_lookat-light_eye; //uniform directional light (sun/moon light)
+    lightProjection = ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 15.0f);
+    lightView = lookAt(
+                    light_eye,
+                    light_lookat,
+                    vec3(0.0, 1.0, 0.0)
+                    );
     prog->bind();
         glUniform3f(prog->getUniform("lightDir"), direction_light.x, direction_light.y, direction_light.z);
     prog->unbind();
@@ -644,9 +750,9 @@ void Application::render(float frametime) {
         }
 
         
-        Model->pushMatrix();
+        
         draw_wheels(Model, Projection);
-        Model->popMatrix();
+        
         
         
     Model->popMatrix();
@@ -681,11 +787,11 @@ void Application::render(float frametime) {
     renderQueue(render_queue);
 
     // cout<<g_eye.x<<' '<< g_eye.z<<' '<<terrainHeightMap.GetHeight(g_eye.x, g_eye.z)+offset_height<<endl;
-    cout<<testMovex<<"\t"<<testMovey<<"\t"<<testMovez<<endl;
     Model->popMatrix();
     // Pop matrix stacks.
     Projection->popMatrix();
     renderTime += frametime;
+
 
 }
 
