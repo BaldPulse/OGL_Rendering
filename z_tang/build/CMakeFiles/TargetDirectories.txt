@@ -1,0 +1,3 @@
+/home/zhao/Documents/cs180/Final/z_tang/build/CMakeFiles/rebuild_cache.dir
+/home/zhao/Documents/cs180/Final/z_tang/build/CMakeFiles/edit_cache.dir
+/home/zhao/Documents/cs180/Final/z_tang/build/CMakeFiles/Camera.dir
