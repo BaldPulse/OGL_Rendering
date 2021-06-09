@@ -93,7 +93,7 @@ float Drive::update(float frametime, float turn, float gas){
     }
 
     float distance = frametime*gas*2.0f;
-    direction += distance * turn * w*0.5f;
+    direction += distance * turn * w*0.2f;
     cout<<"direction1 "<<to_string(direction)<<endl;
     cout<<"turn val "<<distance * turn <<endl;
     vec3 distance_traveled = -1.0f*u*distance;

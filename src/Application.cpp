@@ -355,6 +355,10 @@ void Application::init(const std::string& resourceDirectory)
 {
     GLSL::checkVersion();
 
+    srand(time(NULL));
+    cactusX = (float)rand()/RAND_MAX*40.0 - 20.0;
+    cactusY = (float)rand()/RAND_MAX*40.0 - 20.0;
+
     // Set background color.
     glClearColor(.72f, .84f, 1.06f, 1.0f);
     // Enable z-buffer test.
@@ -472,6 +476,27 @@ void Application::initGeom(const std::string& resourceDirectory)
 			theBunny = make_shared<vector<Shape>>();
             write_to_obj(theBunny, TOshapesE);
 		}
+
+    vector<tinyobj::shape_t> TOshapesT;
+    vector<tinyobj::material_t> objMaterialsT;
+    //load in the mesh and make the shape(s)
+    rc = tinyobj::LoadObj(TOshapesT, objMaterialsT, errStr, (resourceDirectory + "/cactus/cactus.obj").c_str());
+		if (!rc) {
+			cerr << errStr << endl;
+		} else {
+			cactus = make_shared<vector<Shape>>();
+            write_to_obj(cactus, TOshapesT);
+		}
+    
+    cactus_texture = make_shared<TexMap>();
+    cactus_texture->map_kd= new Texture;
+    cactus_texture->map_kd->setFilename(resourceDirectory+"/cactus/texture/diffuse.png");
+    cactus_texture->map_kd->init();
+    cactus_texture->map_kd->setUnit(0);
+    cactus_texture->map_kd->setWrapModes(GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
+    cactus_texture->map_ka = NULL;
+    cactus_texture->map_ks = NULL;
+    
 
     rc = tinyobj::LoadObj(TOshapesE, objMaterialsE, errStr, (resourceDirectory + "/cube_texture.obj").c_str());
 		if (!rc) {
@@ -673,8 +698,8 @@ void Application::render(float frametime) {
         Model->popMatrix();
     cubeProg->unbind();
     
-    vec3 light_eye = vec3(g_eye.x-3.0, 5, g_eye.y-10.0);
-    vec3 light_lookat = vec3(g_eye.x,0.0,g_eye.y);
+    vec3 light_eye = vec3(car_loc.x-3.0, 5, car_loc.y-10.0);
+    vec3 light_lookat = vec3(car_loc.x,0.0,car_loc.y);
     direction_light = light_lookat-light_eye; //uniform directional light (sun/moon light)
     lightProjection = ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 15.0f);
     lightView = lookAt(
@@ -718,6 +743,47 @@ void Application::render(float frametime) {
         NULL,
         NULL
     };
+    shadow_queue->push(shadowParam);
+
+    Model->popMatrix();
+
+    Model->pushMatrix();
+    Model->translate(vec3(cactusX,terrainHeightMap->GetHeight(cactusX, cactusY)-0.3,cactusY));
+    Model->scale(vec3(0.1, 0.1, 0.1));
+    // Model->scale(vec3(0.1,0.1,0.1));
+    for(int i=0; i<3; i++){
+        cactus_material.diffuse[i] = 1.0;
+        cactus_material.ambient[i] = 0.5;
+        cactus_material.specular[i] = 0.1;
+        cactus_material.emission[i] = 0.0;
+    }
+    cactus_material.diffuse[0] = 0.5;
+    cactus_material.shininess = 40;
+
+    for(auto iter=cactus->begin(); iter!=cactus->end(); iter++){
+        thisParam= {
+                glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0)),
+                Model->topMatrix(),
+                Projection->topMatrix(),
+                1.0,
+                texProg,
+                iter,
+                &cactus_material,
+                cactus_texture
+            };
+        render_queue->push(thisParam);
+        shadowParam={
+            lightView,
+            Model->topMatrix(),
+            lightProjection,
+            0.0,
+            shadowProg,
+            iter,
+            NULL,
+            NULL
+        };
+    }
+    
     shadow_queue->push(shadowParam);
 
     Model->popMatrix();

@@ -12,6 +12,8 @@
 #include <algorithm>
 #include <queue>
 #include <math.h>
+#include <stdlib.h> 
+#include <time.h>       /* time */
 
 #include "GLSL.h"
 #include "Program.h"
@@ -63,6 +65,9 @@ public:
 	std::shared_ptr<std::vector<Shape>> lb_wheel;
 	std::shared_ptr<std::vector<Shape>> rb_wheel;
 
+	std::shared_ptr<std::vector<Shape>> cactus;
+	tinyobj::material_t cactus_material;
+	float cactusX, cactusY;
 	std::shared_ptr<std::vector<Shape>> theBunny;
 	std::shared_ptr<std::vector<Shape>> theCube;
 	std::shared_ptr<std::vector<tinyobj::material_t>> car_material;
@@ -95,6 +100,7 @@ public:
     std::shared_ptr<std::queue<DrawParam>> shadow_queue; //shadow mapping
     std::shared_ptr<std::queue<DrawParam>> render_queue; //actual scene
 	std::shared_ptr<TexMap> desert_texture;
+	std::shared_ptr<TexMap> cactus_texture;
 	unsigned int oceanMapTexture;
 	unsigned int skyMapTexture;
 
