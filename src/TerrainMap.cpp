@@ -1,7 +1,7 @@
 #include "TerrainMap.h"
 
-#define THEIGHT  60
-#define TWIDTH  60
+#define THEIGHT  70
+#define TWIDTH  70
 #define TTEX 1 //every unit is divided into ten smaller tex units
 
 using namespace std;

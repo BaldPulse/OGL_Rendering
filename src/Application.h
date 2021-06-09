@@ -117,7 +117,10 @@ public:
 	glm::vec3 g_lookAt ;//= glm::vec3(0, 1, -4);
 	glm::vec3 g_usereye = g_eye;
 
-	int gas = 0;
+	float framDistanceTraveled = 0.0;
+	float wheel_pos = 0.0;
+
+	float gas = 0.0;
     float turn = 0.0;
 
 	glm::mat4 lightView;

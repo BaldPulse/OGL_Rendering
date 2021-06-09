@@ -1,7 +1,7 @@
 #ifndef DRIVE_H
 #define DRIVE_H
 
-#define FLOAT_GRAVITY vec3(0.0, 0.0001, 0.0)
+#define FLOAT_GRAVITY vec3(0.0, 1.0, 0.0)
 
 #include <iostream>
 #include <fstream>
@@ -23,7 +23,7 @@ class Drive
 public:
     Drive(glm::vec2 dir, glm::vec3 loc, TerrainHeightMap* tMap);
 
-    float update(float frametime, float turn, int gas);
+    float update(float frametime, float turn, float gas);
     void findOrientation();
     void createModelMatrix(std::shared_ptr<MatrixStack> Model);
     void set(glm::vec2 dir, glm::vec3 loc);
@@ -36,7 +36,6 @@ private:
     glm::vec3 h_lb;
     glm::vec3 h_rb;
 
-    glm::vec3 velocity;
     glm::vec3 direction;
     glm::vec3 u;
     glm::vec3 v;

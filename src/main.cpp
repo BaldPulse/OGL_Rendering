@@ -24,7 +24,7 @@ using namespace glm;
 
 int main(int argc, char *argv[])
 {
-	obj_to_terrain_map();
+	// obj_to_terrain_map();
 	
 	// Where the resources are loaded from
 	std::string resourceDir = "../resources";

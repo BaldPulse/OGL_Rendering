@@ -67,38 +67,58 @@ void Drive::set(glm::vec2 dir, glm::vec3 loc){
     h_rf.y = terrainHeightMap->GetHeight(h_rf.x, h_rf.z);
     h_lb.y = terrainHeightMap->GetHeight(h_lb.x, h_lb.z);
     h_rb.y = terrainHeightMap->GetHeight(h_rb.x, h_rb.z);
-    cout<<"tire terrain lf"<<glm::to_string(h_lf)<<endl;
-    cout<<"tire terrain rf"<<glm::to_string(h_rf)<<endl;
-    this->location = (h_lb+h_lf+h_rb+h_rf)*0.25f;
+    // cout<<"tire terrain lf"<<glm::to_string(h_lf)<<endl;
+    // cout<<"tire terrain rf"<<glm::to_string(h_rf)<<endl;
+    this->location = loc;
+    this->location.y = (h_lb+h_lf+h_rb+h_rf).y*0.25f;
     this->direction = normalize(vec3(dir.x, 0.0, dir.y));
     findOrientation();
 }
 
-float Drive::update(float frametime, float turn, int gas){
-    vec3 distance_traveled = velocity*frametime;
-    
+float Drive::update(float frametime, float turn, float gas){
+    if(location.x > 28.0 ){
+        location.x = 28.0;
+    }
+    if(location.y > 28.0){
+        location.y = 28.0;
+    }
+    if(location.x < -28.0 ){
+        location.x = -28.0;
+    }
+    if(location.y < -28.0){
+        location.y = -28.0;
+    }
+    if(gas == 0.0){
+        return 0.0;
+    }
+
+    float distance = frametime*gas*2.0f;
+    direction += distance * turn * w*0.5f;
+    cout<<"direction1 "<<to_string(direction)<<endl;
+    cout<<"turn val "<<distance * turn <<endl;
+    vec3 distance_traveled = -1.0f*u*distance;
+    distance_traveled.y = 0.0;
     location += distance_traveled;
+    this->set(vec2(direction.x, direction.z), location);
+    cout<<"direction2 "<<to_string(direction)<<endl;
 
-    h_lf = location + lf.x*w + lf.y*v + lf.z*u;
-    h_rf = location + rf.x*w + rf.y*v + rf.z*u;
-    h_lb = location + lb.x*w + lb.y*v + lb.z*u;
-    h_rb = location + rb.x*w + rb.y*v + rb.z*u;
+    // h_lf = location + lf.x*w + lf.y*v + lf.z*u;
+    // h_rf = location + rf.x*w + rf.y*v + rf.z*u;
+    // h_lb = location + lb.x*w + lb.y*v + lb.z*u;
+    // h_rb = location + rb.x*w + rb.y*v + rb.z*u;
 
-    h_lf.y = terrainHeightMap->GetHeight(h_lf.x, h_lf.z);
-    h_rf.y = terrainHeightMap->GetHeight(h_rf.x, h_rf.z);
-    h_lb.y = terrainHeightMap->GetHeight(h_lb.x, h_lb.z);
-    h_rb.y = terrainHeightMap->GetHeight(h_rb.x, h_rb.z);
+    // h_lf.y = terrainHeightMap->GetHeight(h_lf.x, h_lf.z);
+    // h_rf.y = terrainHeightMap->GetHeight(h_rf.x, h_rf.z);
+    // h_lb.y = terrainHeightMap->GetHeight(h_lb.x, h_lb.z);
+    // h_rb.y = terrainHeightMap->GetHeight(h_rb.x, h_rb.z);
 
-    findOrientation();
+    // this->location.y = (h_lb+h_lf+h_rb+h_rf).y*0.25f;
+    // cout<<"location "<<glm::to_string(location)<<endl;
 
-    velocity -= frametime * FLOAT_GRAVITY;
-    float speed = length(velocity);
-    if(speed < 0.1)
-        velocity = vec3(0.0, 0.0, 0.0);
-    else
-        velocity *= 0.9f;
+    // findOrientation();
 
-    return length(distance_traveled);
+
+    return length(distance_traveled)*gas;
 }
 
 void Drive::getLocationDirection(glm::vec3& loc, glm::vec3& dir){
@@ -109,15 +129,15 @@ void Drive::getLocationDirection(glm::vec3& loc, glm::vec3& dir){
 void Drive::findOrientation(){
     vec3 a = h_lf - h_rb;
     vec3 b = h_lb - h_rf;
-    cout<<"a "<<glm::to_string(a)<<endl;
-    cout<<"b "<<glm::to_string(b)<<endl;
+    // cout<<"a "<<glm::to_string(a)<<endl;
+    // cout<<"b "<<glm::to_string(b)<<endl;
     vec3 n = cross(a, b);
-    cout<<"n "<<glm::to_string(n)<<endl;
+    // cout<<"n "<<glm::to_string(n)<<endl;
     v = normalize(n);
     u = normalize( this->direction - dot(this->direction,v) * v);
     // w = normalize(cross(u, v));
     w = normalize(cross(u, v));
-    direction = u;
+    // direction = u;
     // cout<<"uvw\n"<<glm::to_string(u)<<endl<<glm::to_string(v)<<endl<<glm::to_string(w)<<endl;
 }
 

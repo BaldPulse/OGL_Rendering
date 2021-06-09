@@ -201,9 +201,10 @@ void Application::car_to_obj(std::shared_ptr<std::vector<Shape>> car,
 }
 
 void Application::draw_wheels(std::shared_ptr<MatrixStack> Model, std::shared_ptr<MatrixStack> Projection){
+    wheel_pos = -gas * renderTime;
     Model->pushMatrix();
     Model->translate(vec3(0.0-rbMovex,0.0-rbMovey,0.0-rbMovez));
-    Model->rotate(renderTime, vec3(1.0, 0.0, 0.0));
+    Model->rotate(wheel_pos, vec3(1.0, 0.0, 0.0));
     Model->translate(vec3(0.0+rbMovex,0.0+rbMovey,0.0+rbMovez));
     for(auto iter=rb_wheel->begin(); iter!=rb_wheel->end(); iter++){
         DrawParam thisParam= {
@@ -233,7 +234,7 @@ void Application::draw_wheels(std::shared_ptr<MatrixStack> Model, std::shared_pt
     
     Model->pushMatrix();
     Model->translate(vec3(0.0-lbMovex,0.0-lbMovey,0.0-lbMovez));
-    Model->rotate(renderTime, vec3(1.0, 0.0, 0.0));
+    Model->rotate(wheel_pos, vec3(1.0, 0.0, 0.0));
     Model->translate(vec3(0.0+lbMovex,0.0+lbMovey,0.0+lbMovez));
     for(auto iter=lb_wheel->begin(); iter!=lb_wheel->end(); iter++){
         DrawParam thisParam= {
@@ -264,7 +265,7 @@ void Application::draw_wheels(std::shared_ptr<MatrixStack> Model, std::shared_pt
     Model->pushMatrix();
     Model->translate(vec3(0.0-rfMovex,0.0-rfMovey,0.0-rfMovez));
     Model->rotate(turn*MAX_TURN, vec3(0.0, 1.0, 0.0));
-    Model->rotate(renderTime, vec3(1.0, 0.0, 0.0));
+    Model->rotate(wheel_pos, vec3(1.0, 0.0, 0.0));
     Model->translate(vec3(0.0+rfMovex,0.0+rfMovey,0.0+rfMovez));
     for(auto iter=rf_wheel->begin(); iter!=rf_wheel->end(); iter++){
         DrawParam thisParam= {
@@ -295,7 +296,7 @@ void Application::draw_wheels(std::shared_ptr<MatrixStack> Model, std::shared_pt
     Model->pushMatrix();
     Model->translate(vec3(0.0-lfMovex,0.0-lfMovey,0.0-lfMovez));
     Model->rotate(turn*MAX_TURN, vec3(0.0, 1.0, 0.0));
-    Model->rotate(renderTime, vec3(1.0, 0.0, 0.0));
+    Model->rotate(wheel_pos, vec3(1.0, 0.0, 0.0));
     Model->translate(vec3(0.0+lfMovex,0.0+lfMovey,0.0+lfMovez));
     for(auto iter=lf_wheel->begin(); iter!=lf_wheel->end(); iter++){
         DrawParam thisParam= {
@@ -562,10 +563,13 @@ void Application::updateView(float frametime){
 
 
     if(mv_forward){
-        gas = 1;
+        gas = -1.0;
     }
-    if(mv_back){
-        gas = -1;
+    else if(mv_back){
+        gas = 1.0;
+    }
+    else{
+        gas = 0.0;
     }
     if(mv_left){
         turn += frametime * 2.5;
@@ -584,10 +588,13 @@ void Application::updateView(float frametime){
             turn = 0.0;
         }
     }
-    cout<<"turn "<<turn<<endl;
+
+    carDrive->update(frametime, turn, gas);
+
+    // cout<<"turn "<<turn<<endl;
 }
 
-/* camera controls - do not change */
+
 void Application::SetView(shared_ptr<Program>  shader) {
     glm::mat4 Cam = glm::lookAt(g_eye, g_lookAt, vec3(0, 1, 0));
     glUniformMatrix4fv(shader->getUniform("V"), 1, GL_FALSE, value_ptr(Cam));
