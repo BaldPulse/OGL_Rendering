@@ -29,6 +29,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader/tiny_obj_loader.h>
 #define PI 3.1415927
+#define MAX_TURN 0.55
 // value_ptr for glm
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -112,9 +113,12 @@ public:
 	glm::vec3 view = glm::vec3(0, 0, 1);
 	glm::vec3 strafe = glm::vec3(1, 0, 0);
 	glm::vec3 g_eye = glm::vec3(0, 1, 3);
+	glm::vec3 car_loc;
 	glm::vec3 g_lookAt ;//= glm::vec3(0, 1, -4);
-	glm::vec3 look_dir;
 	glm::vec3 g_usereye = g_eye;
+
+	int gas = 0;
+    float turn = 0.0;
 
 	glm::mat4 lightView;
 	glm::mat4 lightProjection;
@@ -179,7 +183,7 @@ public:
 
 	void setModel(std::shared_ptr<Program> prog, std::shared_ptr<MatrixStack>M);
 
-	void updateView();
+	void updateView(float frametime);
 
    	/* camera controls - do not change */
 	void SetView(std::shared_ptr<Program>  shader);

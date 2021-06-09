@@ -263,6 +263,7 @@ void Application::draw_wheels(std::shared_ptr<MatrixStack> Model, std::shared_pt
 
     Model->pushMatrix();
     Model->translate(vec3(0.0-rfMovex,0.0-rfMovey,0.0-rfMovez));
+    Model->rotate(turn*MAX_TURN, vec3(0.0, 1.0, 0.0));
     Model->rotate(renderTime, vec3(1.0, 0.0, 0.0));
     Model->translate(vec3(0.0+rfMovex,0.0+rfMovey,0.0+rfMovez));
     for(auto iter=rf_wheel->begin(); iter!=rf_wheel->end(); iter++){
@@ -293,6 +294,7 @@ void Application::draw_wheels(std::shared_ptr<MatrixStack> Model, std::shared_pt
 
     Model->pushMatrix();
     Model->translate(vec3(0.0-lfMovex,0.0-lfMovey,0.0-lfMovez));
+    Model->rotate(turn*MAX_TURN, vec3(0.0, 1.0, 0.0));
     Model->rotate(renderTime, vec3(1.0, 0.0, 0.0));
     Model->translate(vec3(0.0+lfMovex,0.0+lfMovey,0.0+lfMovez));
     for(auto iter=lf_wheel->begin(); iter!=lf_wheel->end(); iter++){
@@ -544,22 +546,45 @@ void Application::setModel(std::shared_ptr<Program> prog, std::shared_ptr<Matrix
     glUniformMatrix4fv(prog->getUniform("M"), 1, GL_FALSE, value_ptr(M->topMatrix()));
 }
 
-void Application::updateView(){
+void Application::updateView(float frametime){
     float sign = 1.0f;
     if(g_phi <= glm::pi<float>()/2 || g_phi >= 3*glm::pi<float>()/2){
         sign = -1.0f;
     }
-    look_dir=normalize(vec3(2.0*cos(g_phi)*cos(g_theta), 2.0*sin(g_phi), 2.0*cos(g_phi)*cos((glm::pi<double>()/2)-g_theta)));
-    // cout<<"look dir"<<glm::to_string(look_dir)<<endl;
-    g_lookAt = g_eye + look_dir;
-    if(mv_forward && !mv_back)
-        g_eye += 0.02f * look_dir;
-    else if(mv_back && !mv_forward)
-        g_eye -= 0.02f * look_dir;
-    if(mv_right && !mv_left)
-        g_eye += 0.02f * normalize(cross(look_dir, vec3(0, 1, 0)));
-    else if(mv_left && !mv_right)
-        g_eye -= 0.02f * normalize(cross(look_dir, vec3(0, 1, 0)));
+    vec3 carDir;
+    carDrive->getLocationDirection(car_loc, carDir);
+    g_eye = car_loc+vec3(0.0,9.8,0.0) - 5.0f* normalize(vec3(2.0*cos(g_phi)*cos(g_theta), 2.0*sin(g_phi), 2.0*cos(g_phi)*cos((glm::pi<double>()/2)-g_theta)));
+    // cout<<"g eye "<<glm::to_string(g_eye)<<endl;
+    g_lookAt = car_loc+vec3(0.0,9.8,0.0);
+    if(g_eye.y < (terrainHeightMap->GetHeight(g_eye.x, g_eye.y)+9.1)){
+        g_eye.y = terrainHeightMap->GetHeight(g_eye.x, g_eye.y)+9.1;
+    }
+
+
+    if(mv_forward){
+        gas = 1;
+    }
+    if(mv_back){
+        gas = -1;
+    }
+    if(mv_left){
+        turn += frametime * 2.5;
+        turn = std::min(turn, 1.0f);
+    }
+    else if(mv_right){
+        turn -= frametime * 2.5;
+        turn = std::max(turn, -1.0f);
+    }
+    else{
+        if(turn < -0.01)
+            turn += frametime* 2.5;
+        else if(turn > 0.01)
+            turn -= frametime* 2.5;
+        else{
+            turn = 0.0;
+        }
+    }
+    cout<<"turn "<<turn<<endl;
 }
 
 /* camera controls - do not change */
@@ -622,7 +647,7 @@ void Application::render(float frametime) {
 
     View->pushMatrix();
     if(!goCamera)
-        updateView();
+        updateView(frametime);
     else
         g_lookAt = vec3(0,1,0);
     
@@ -696,7 +721,7 @@ void Application::render(float frametime) {
     Model->pushMatrix();
         // Model->translate(vec3(g_eye.x,terrainHeightMap.GetHeight(g_eye.x, g_eye.z-2.0)+offset_height+0.5 ,g_eye.z-2.0));
         // Model->translate(vec3(0.0,terrainHeightMap->GetHeight(0.0, 0.0-2.0)+1.0 ,0.0-2.0));
-        carDrive->set(vec2(1.0, 0.0), vec3(g_eye.x, g_eye.y, g_eye.z-2.0));
+        // carDrive->set(vec2(1.0, 0.0), vec3(g_eye.x, g_eye.y, g_eye.z-2.0));
         carDrive->createModelMatrix(Model);
         Model->translate(vec3(0.0, offset_height, 0.0));
         // Model->rotate(0.78, vec3(0,1,0));

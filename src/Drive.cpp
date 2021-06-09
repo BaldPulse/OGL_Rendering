@@ -34,9 +34,9 @@ Drive::Drive(glm::vec2 dir, glm::vec3 loc, TerrainHeightMap* tMap){
     h_rb.y = terrainHeightMap->GetHeight(h_rb.x, h_rb.z);
     // cout<<"tire terrain lf"<<glm::to_string(h_lf)<<endl;
     // cout<<"tire terrain rf"<<glm::to_string(h_rf)<<endl;
-    this->location = loc;
     this->direction = normalize(vec3(dir.x, 0.0, dir.y));
     findOrientation();
+    this->location = (h_lb+h_lf+h_rb+h_rf)*0.25f;
 }
 
 void Drive::set(glm::vec2 dir, glm::vec3 loc){
@@ -69,14 +69,41 @@ void Drive::set(glm::vec2 dir, glm::vec3 loc){
     h_rb.y = terrainHeightMap->GetHeight(h_rb.x, h_rb.z);
     cout<<"tire terrain lf"<<glm::to_string(h_lf)<<endl;
     cout<<"tire terrain rf"<<glm::to_string(h_rf)<<endl;
-    this->location = loc;
+    this->location = (h_lb+h_lf+h_rb+h_rf)*0.25f;
     this->direction = normalize(vec3(dir.x, 0.0, dir.y));
     findOrientation();
 }
 
-void Drive::update(){
+float Drive::update(float frametime, float turn, int gas){
+    vec3 distance_traveled = velocity*frametime;
+    
+    location += distance_traveled;
 
+    h_lf = location + lf.x*w + lf.y*v + lf.z*u;
+    h_rf = location + rf.x*w + rf.y*v + rf.z*u;
+    h_lb = location + lb.x*w + lb.y*v + lb.z*u;
+    h_rb = location + rb.x*w + rb.y*v + rb.z*u;
 
+    h_lf.y = terrainHeightMap->GetHeight(h_lf.x, h_lf.z);
+    h_rf.y = terrainHeightMap->GetHeight(h_rf.x, h_rf.z);
+    h_lb.y = terrainHeightMap->GetHeight(h_lb.x, h_lb.z);
+    h_rb.y = terrainHeightMap->GetHeight(h_rb.x, h_rb.z);
+
+    findOrientation();
+
+    velocity -= frametime * FLOAT_GRAVITY;
+    float speed = length(velocity);
+    if(speed < 0.1)
+        velocity = vec3(0.0, 0.0, 0.0);
+    else
+        velocity *= 0.9f;
+
+    return length(distance_traveled);
+}
+
+void Drive::getLocationDirection(glm::vec3& loc, glm::vec3& dir){
+    loc = this->location;
+    dir = this->u;
 }
 
 void Drive::findOrientation(){
@@ -86,9 +113,8 @@ void Drive::findOrientation(){
     cout<<"b "<<glm::to_string(b)<<endl;
     vec3 n = cross(a, b);
     cout<<"n "<<glm::to_string(n)<<endl;
-    vec3 a_wheel = h_lf-h_lb;
     v = normalize(n);
-    u = normalize( a_wheel - dot(a_wheel,v) * v);
+    u = normalize( this->direction - dot(this->direction,v) * v);
     // w = normalize(cross(u, v));
     w = normalize(cross(u, v));
     direction = u;
@@ -96,8 +122,8 @@ void Drive::findOrientation(){
 }
 
 void Drive::createModelMatrix(std::shared_ptr<MatrixStack> Model){
-    vec3 translateMat = (h_lb+h_lf+h_rb+h_rf)*0.25f; //translate from wheel to middle
-    cout<<"translateMat "<<glm::to_string(translateMat)<<endl;
+    vec3 translateMat = location; //translate from wheel to middle
+    // cout<<"translateMat "<<glm::to_string(translateMat)<<endl;
     Model->translate(translateMat);
     vec3 default_u = vec3(0.0, 0.0, 1.0); //natural front
     vec3 axis = normalize(cross(default_u,u));
